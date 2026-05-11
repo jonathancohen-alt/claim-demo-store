@@ -1,0 +1,61 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  background: #F5EBDD;
+  color: #0E1410;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  font-feature-settings: 'ss01', 'cv11';
+}
+
+#root {
+  min-height: 100vh;
+}
+
+/* Display headings use Sora */
+.font-display {
+  font-family: 'Sora', 'Inter', system-ui, sans-serif;
+  font-feature-settings: 'ss01';
+}
+
+/* Wordmark — slightly tightened, weight 700 */
+.oriva-wordmark {
+  font-family: 'Sora', 'Inter', system-ui, sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  font-feature-settings: 'ss01';
+}
+
+/* Subtle grain background for hero sections */
+.bg-grain {
+  background-image: radial-gradient(rgba(14,20,16,0.04) 1px, transparent 1px);
+  background-size: 4px 4px;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Marquee */
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+.animate-marquee {
+  animation: marquee 32s linear infinite;
+}

@@ -1,0 +1,129 @@
+import { createContext, useContext, useState, useCallback } from 'react';
+import { useAuth } from '../hooks/useAuth';
+import { useResults } from '../hooks/useResults';
+
+const AppContext = createContext(null);
+
+export function AppProvider({ children }) {
+  const auth = useAuth();
+  const results = useResults();
+
+  // Modal / flow state
+  const [flowOpen, setFlowOpen] = useState(false);
+  const [currentStep, setCurrentStep] = useState(0); // 0–4 (5 steps)
+  const [flowDirection, setFlowDirection] = useState('forward'); // 'forward' | 'back'
+
+  // Post-flow: show loyalty dashboard instead of store
+  const [showDashboard, setShowDashboard] = useState(false);
+
+  // Cart state
+  const [cartItems, setCartItems] = useState([]);
+
+  const addToCart = useCallback((product, qty = 1) => {
+    setCartItems(prev => {
+      const existing = prev.find(i => i.id === product.id);
+      if (existing) {
+        return prev.map(i => i.id === product.id ? { ...i, qty: i.qty + qty } : i);
+      }
+      return [...prev, { ...product, qty }];
+    });
+  }, []);
+
+  const removeFromCart = useCallback((id) => {
+    setCartItems(prev => prev.filter(i => i.id !== id));
+  }, []);
+
+  const cartCount = cartItems.reduce((sum, i) => sum + i.qty, 0);
+  const cartTotal = cartItems.reduce((sum, i) => sum + i.price * i.qty, 0);
+
+  // Demo controls
+  const [debugMode, setDebugMode] = useState(false);
+
+  // Open the modal and reset to step 0
+  const openFlow = useCallback(() => {
+    setCurrentStep(0);
+    setFlowDirection('forward');
+    setFlowOpen(true);
+  }, []);
+
+  // Close the modal
+  const closeFlow = useCallback(() => {
+    setFlowOpen(false);
+  }, []);
+
+  // Advance to next step
+  const nextStep = useCallback(() => {
+    setFlowDirection('forward');
+    setCurrentStep((s) => Math.min(s + 1, 4));
+  }, []);
+
+  // Go back one step
+  const prevStep = useCallback(() => {
+    setFlowDirection('back');
+    setCurrentStep((s) => Math.max(s - 1, 0));
+  }, []);
+
+  // Go to a specific step
+  const goToStep = useCallback((n) => {
+    setFlowDirection(n > currentStep ? 'forward' : 'back');
+    setCurrentStep(n);
+  }, [currentStep]);
+
+  // Complete the flow — close modal, show loyalty dashboard
+  const completeFlow = useCallback(() => {
+    setFlowOpen(false);
+    setShowDashboard(true);
+  }, []);
+
+  const resetDemo = useCallback(() => {
+    results.clearResults();
+    setFlowOpen(false);
+    setCurrentStep(0);
+    setShowDashboard(false);
+    setDebugMode(false);
+  }, [results]);
+
+  return (
+    <AppContext.Provider
+      value={{
+        // Auth (spread from useAuth)
+        ...auth,
+
+        // Results (spread from useResults)
+        ...results,
+
+        // Flow / modal state
+        flowOpen,
+        currentStep,
+        flowDirection,
+        showDashboard,
+        openFlow,
+        closeFlow,
+        nextStep,
+        prevStep,
+        goToStep,
+        completeFlow,
+
+        // Cart
+        cartItems,
+        cartCount,
+        cartTotal,
+        addToCart,
+        removeFromCart,
+
+        // Demo
+        debugMode,
+        setDebugMode,
+        resetDemo,
+      }}
+    >
+      {children}
+    </AppContext.Provider>
+  );
+}
+
+export function useApp() {
+  const ctx = useContext(AppContext);
+  if (!ctx) throw new Error('useApp must be used within AppProvider');
+  return ctx;
+}
