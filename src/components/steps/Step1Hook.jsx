@@ -38,6 +38,14 @@ function TargetIcon({ size = 28 }) {
     </svg>
   );
 }
+function DarkCircleIcon({ size = 28 }) {
+  return (
+    <svg viewBox="0 0 32 32" width={size} height={size} className="flex-shrink-0">
+      <circle cx="16" cy="16" r="16" fill="#1a1a1a" />
+      <text x="16" y="21" textAnchor="middle" fill="white" fontSize="14" fontWeight="700" fontFamily="Georgia,serif">i</text>
+    </svg>
+  );
+}
 function GoogleG() {
   return (
     <svg viewBox="0 0 20 20" className="w-5 h-5 flex-shrink-0">
@@ -62,10 +70,10 @@ function GmailIcon() {
 
 // ─── Badge data ────────────────────────────────────────────────────────────────
 const BADGES = [
-  { icon: <AmazonIcon />,  label: 'amazon',  points: '+450', top: '8%',  left: '60%' },
-  { icon: <WalmartIcon />, label: 'walmart', points: '+150', top: '34%', left: '44%' },
-  { icon: <TargetIcon />,  label: 'target',  points: '+300', top: '16%', left: '4%'  },
-  { icon: <MacysIcon />,   label: "macy's",  points: '+450', top: '55%', left: '48%' },
+  { icon: <AmazonIcon />,     label: 'amazon',  points: '+450', top: '8%',  left: '60%' },
+  { icon: <WalmartIcon />,    label: 'walmart', points: '+150', top: '34%', left: '44%' },
+  { icon: <DarkCircleIcon />, label: '',        points: '+300', top: '16%', left: '4%'  },
+  { icon: <MacysIcon />,      label: "macy's",  points: '+450', top: '55%', left: '48%' },
 ];
 
 // ─── Gmail connecting bubble ──────────────────────────────────────────────────
@@ -174,7 +182,7 @@ function Hook3Scanner({ onNext }) {
   }, []);
 
   return (
-    <div className="flex flex-col h-full -mx-5 -mb-6">
+    <div className="flex flex-col" style={{ minHeight: 500 }}>
 
       {/* Scanning top — forest green */}
       <div className="flex-shrink-0 px-5 pt-7 pb-6" style={{ background: '#1F4F3D' }}>
@@ -434,6 +442,163 @@ function GoogleLogo() {
   );
 }
 
+// ─── How it works overlay ─────────────────────────────────────────────────────
+const DO_ITEMS = [
+  {
+    icon: <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M4 10.5L7.5 14L16 6" stroke="#1F4F3D" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+    iconBg: '#D6EDE5',
+    title: 'Find your receipts',
+    body: 'We scan your inbox for order confirmations from retailers like Amazon, Walmart, and Target.',
+  },
+  {
+    icon: <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 3L11.5 7.5H16.5L12.5 10.5L14 15L10 12L6 15L7.5 10.5L3.5 7.5H8.5Z" fill="#1F4F3D" opacity="0.85"/></svg>,
+    iconBg: '#D6EDE5',
+    title: 'Award your points',
+    body: 'Matched purchases are automatically credited to your loyalty account.',
+  },
+];
+
+const DONT_ITEMS = [
+  {
+    icon: <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M5 5L13 13M13 5L5 13" stroke="#A04030" strokeWidth="2" strokeLinecap="round"/></svg>,
+    iconBg: '#F9E8E5',
+    title: 'Read personal emails',
+    body: "We never read personal messages, social emails, or anything that isn't an order confirmation.",
+  },
+  {
+    icon: <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M5 5L13 13M13 5L5 13" stroke="#A04030" strokeWidth="2" strokeLinecap="round"/></svg>,
+    iconBg: '#F9E8E5',
+    title: 'Store or sell your data',
+    body: "We don't store your messages or share your data with advertisers. Ever.",
+  },
+  {
+    icon: <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M5 5L13 13M13 5L5 13" stroke="#A04030" strokeWidth="2" strokeLinecap="round"/></svg>,
+    iconBg: '#F9E8E5',
+    title: 'Give brands inbox access',
+    body: "The brand never sees your inbox. Only Claim reads your receipts.",
+  },
+];
+
+function HowItWorksModal({ onClose, onConnectGoogle }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="absolute inset-0 z-50 flex items-end justify-center"
+      style={{ background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(2px)' }}
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ y: '100%' }}
+        animate={{ y: 0 }}
+        exit={{ y: '100%' }}
+        transition={{ type: 'spring', stiffness: 320, damping: 34 }}
+        className="w-full overflow-y-auto"
+        style={{ borderRadius: '20px 20px 0 0', maxHeight: '90%', padding: '24px 24px 32px', background: '#FFFFFF' }}
+        onClick={e => e.stopPropagation()}
+      >
+        {/* Handle */}
+        <div className="w-10 h-1 rounded-full mx-auto mb-5" style={{ background: 'rgba(14,20,16,0.12)' }} />
+
+        {/* Title */}
+        <motion.h2
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="font-display text-ink-900 leading-[0.95] tracking-tightest mb-6"
+          style={{ fontSize: '1.75rem' }}
+        >
+          <span className="font-medium">Here's exactly</span><br />
+          <span className="font-extrabold">what Claim does.</span>
+        </motion.h2>
+
+        {/* Do items */}
+        <div className="space-y-4 mb-4">
+          {DO_ITEMS.map((item, i) => (
+            <motion.div
+              key={item.title}
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.08 + i * 0.08 }}
+              className="flex items-start gap-3.5"
+            >
+              <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5" style={{ background: item.iconBg }}>
+                {item.icon}
+              </div>
+              <div className="pt-1">
+                <div className="font-display font-semibold text-ink-900 text-sm leading-snug mb-0.5">{item.title}</div>
+                <div className="text-sm leading-snug" style={{ color: 'rgba(14,20,16,0.55)' }}>{item.body}</div>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+
+        {/* Divider */}
+        <motion.div
+          initial={{ scaleX: 0 }}
+          animate={{ scaleX: 1 }}
+          transition={{ delay: 0.22, duration: 0.35 }}
+          className="my-4"
+          style={{ height: 1, background: 'rgba(14,20,16,0.10)', transformOrigin: 'left' }}
+        />
+
+        {/* Don't items */}
+        <div className="space-y-4 mb-5">
+          {DONT_ITEMS.map((item, i) => (
+            <motion.div
+              key={item.title}
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.24 + i * 0.08 }}
+              className="flex items-start gap-3.5"
+            >
+              <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5" style={{ background: item.iconBg }}>
+                {item.icon}
+              </div>
+              <div className="pt-1">
+                <div className="font-display font-semibold text-ink-900 text-sm leading-snug mb-0.5">{item.title}</div>
+                <div className="text-sm leading-snug" style={{ color: 'rgba(14,20,16,0.55)' }}>{item.body}</div>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+
+        {/* Control note */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.42 }}
+          className="rounded-2xl px-4 py-3 mb-5"
+          style={{ background: 'rgba(31,79,61,0.07)', border: '1px solid rgba(31,79,61,0.12)' }}
+        >
+          <div className="font-display font-semibold text-sm mb-0.5" style={{ color: '#1F4F3D' }}>You're always in control.</div>
+          <div className="text-sm" style={{ color: 'rgba(14,20,16,0.55)' }}>Disconnect your inbox any time in one click. Your points stay.</div>
+        </motion.div>
+
+        {/* CTA */}
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.48 }}
+          className="space-y-3"
+        >
+          <button
+            onClick={onConnectGoogle}
+            className="w-full flex items-center justify-center gap-2.5 font-display font-semibold text-sm rounded-pill transition-all active:scale-[0.97] bg-ink-900 text-cream-100"
+            style={{ height: 52 }}
+          >
+            <GoogleG />
+            Connect my inbox
+          </button>
+          <p className="text-center text-xs" style={{ color: 'rgba(14,20,16,0.35)' }}>
+            🔒 Read-only · We never send or modify emails · Revoke anytime
+          </p>
+        </motion.div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
 // ─── Mock Google OAuth overlay ────────────────────────────────────────────────
 const DEMO_EMAIL = 'demo@gmail.com';
 
@@ -461,7 +626,7 @@ function MockGoogleOAuth({ onAllow, onDeny }) {
             <div className="px-6 pt-8 pb-5 text-center border-b border-gray-100">
               <GoogleLogo />
               <h2 className="text-xl font-normal text-gray-800 mt-4 mb-1">Sign in</h2>
-              <p className="text-sm text-gray-500">to continue to <span className="font-medium text-gray-700">Oriva</span></p>
+              <p className="text-sm text-gray-500">to continue to <span className="font-medium text-gray-700">Claim</span></p>
             </div>
             <button
               onClick={() => setOauthStep('consent')}
@@ -496,12 +661,12 @@ function MockGoogleOAuth({ onAllow, onDeny }) {
               <div className="flex items-start gap-3 mb-5">
                 <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-medium flex-shrink-0" style={{ background: '#4285F4' }}>D</div>
                 <div>
-                  <div className="text-sm font-medium text-gray-800 leading-snug">Oriva wants access to your Google Account</div>
+                  <div className="text-sm font-medium text-gray-800 leading-snug">Claim wants access to your Google Account</div>
                   <div className="text-xs text-blue-600 mt-0.5">{DEMO_EMAIL}</div>
                 </div>
               </div>
               <div className="border border-gray-200 rounded-xl overflow-hidden mb-4">
-                <div className="px-4 py-2.5 bg-gray-50 text-xs font-medium text-gray-500 uppercase tracking-wide">This will allow Oriva to</div>
+                <div className="px-4 py-2.5 bg-gray-50 text-xs font-medium text-gray-500 uppercase tracking-wide">This will allow Claim to</div>
                 <div className="flex items-start gap-3 px-4 py-3">
                   <svg viewBox="0 0 24 24" className="w-5 h-5 text-gray-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" strokeWidth="1.5">
                     <path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" strokeLinecap="round" strokeLinejoin="round"/>
@@ -513,7 +678,7 @@ function MockGoogleOAuth({ onAllow, onDeny }) {
                 </div>
               </div>
               <p className="text-xs text-gray-400 leading-relaxed">
-                Make sure you trust Oriva. You can always see and remove account access in your{' '}
+                Make sure you trust Claim. You can always see and remove account access in your{' '}
                 <span className="text-blue-500">Google Account</span>.
               </p>
             </div>
@@ -543,6 +708,7 @@ function MockGoogleOAuth({ onAllow, onDeny }) {
 export function Step1Hook() {
   const [phase, setPhase] = useState(0);
   const [showMockOAuth, setShowMockOAuth] = useState(false);
+  const [showHowItWorks, setShowHowItWorks] = useState(false);
   const [scanComplete, setScanComplete] = useState(false);
   const { nextStep, goToStep, closeFlow, login, authState, isAuthenticated } = useApp();
 
@@ -564,8 +730,76 @@ export function Step1Hook() {
     return <Hook3Scanner onNext={() => goToStep(2)} />;
   }
 
+  // ── Phase 0: PNG at natural proportions ─────────────────────────────────────
+  if (phase === 0) {
+    return (
+      <div className="relative">
+        <AnimatePresence>
+          {showMockOAuth && (
+            <MockGoogleOAuth
+              onAllow={() => { setShowMockOAuth(false); setPhase(1); }}
+              onDeny={() => setShowMockOAuth(false)}
+            />
+          )}
+        </AnimatePresence>
+        <AnimatePresence>
+          {showHowItWorks && (
+            <HowItWorksModal
+              onClose={() => setShowHowItWorks(false)}
+              onConnectGoogle={() => { setShowHowItWorks(false); handleContinueWithGoogle(); }}
+            />
+          )}
+        </AnimatePresence>
+
+        {/* PNG as-is at natural proportions */}
+        <img
+          src="/images/claim-hook.png"
+          alt="Claim consent screen"
+          className="w-full block"
+        />
+
+        {/* Continue with Google — hit area covering button in PNG */}
+        <button
+          onClick={handleContinueWithGoogle}
+          disabled={isLoading}
+          className="absolute cursor-pointer"
+          style={{
+            top: '62%', left: '47%', right: '4%', height: '7%',
+            background: isLoading ? 'rgba(0,0,0,0.55)' : 'transparent',
+            border: 'none',
+            borderRadius: 14,
+            zIndex: 10,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            gap: 8, color: 'white', fontWeight: 600, fontSize: '0.9375rem',
+          }}
+        >
+          {isLoading && <><Loader2 size={16} className="animate-spin" />Connecting…</>}
+        </button>
+
+        {/* Not sure yet? — covers the "Learn how it works" text in the PNG */}
+        <button
+          onClick={() => setShowHowItWorks(true)}
+          className="absolute cursor-pointer flex items-center justify-center"
+          style={{
+            top: '70%', left: '56%', right: '14%', height: '7%',
+            background: 'white',
+            border: 'none',
+            zIndex: 10,
+            fontSize: '0.8125rem',
+            color: '#6b7280',
+            textDecoration: 'underline',
+            textDecorationColor: '#d1d5db',
+          }}
+        >
+          Not sure yet?
+        </button>
+      </div>
+    );
+  }
+
+  // ── Phase 1: Gmail connecting / scanning → found ──────────────────────────
   return (
-    <div className="relative flex flex-col h-full -mx-5 -mb-6">
+    <div className="relative flex flex-col" style={{ minHeight: 500 }}>
       <AnimatePresence>
         {showMockOAuth && (
           <MockGoogleOAuth
@@ -575,60 +809,39 @@ export function Step1Hook() {
         )}
       </AnimatePresence>
 
-      {/* ── Top: product photo + floating badges ─────────────────────────── */}
+      {/* Product photo with Gmail bubble */}
       <div
         className="relative flex-shrink-0 overflow-hidden"
-        style={{ background: '#9AAAE0', height: '52%', minHeight: 260 }}
+        style={{ background: '#9AAAE0', height: 240 }}
       >
         <img
           src="/images/product-cleanser.jpg"
           alt="ORIVA product"
           className="w-full h-full object-cover object-center"
         />
-
-        {/* Bottom fade */}
         <div
           className="absolute inset-x-0 bottom-0 h-20 pointer-events-none"
           style={{ background: 'linear-gradient(to top, rgba(245,235,221,0.55) 0%, transparent 100%)' }}
         />
-
-        {/* Floating retailer badges */}
         {BADGES.map(({ icon, label, points, top, left }, i) => (
           <motion.div
             key={label}
-            initial={{ opacity: 0, scale: 0.7, y: 8 }}
-            animate={
-              phase >= 1
-                ? { opacity: 1, scale: 1, y: [0, -7, 0, -4, 0] }
-                : { opacity: 1, scale: 1, y: 0 }
-            }
-            transition={
-              phase >= 1
-                ? { y: { duration: 2.4 + i * 0.35, repeat: Infinity, ease: 'easeInOut', delay: i * 0.45 } }
-                : { delay: 0.2 + i * 0.12, type: 'spring', stiffness: 280, damping: 22 }
-            }
+            initial={{ opacity: 0, scale: 0.7 }}
+            animate={{ opacity: 1, scale: 1, y: [0, -7, 0, -4, 0] }}
+            transition={{ y: { duration: 2.4 + i * 0.35, repeat: Infinity, ease: 'easeInOut', delay: i * 0.45 } }}
             className="absolute flex items-center gap-1.5 rounded-full px-2.5 py-1.5 shadow-lg"
-            style={{
-              top, left,
-              background: 'white',
-              boxShadow: '0 4px 16px rgba(0,0,0,0.14)',
-              transform: 'translateX(-50%)',
-            }}
+            style={{ top, left, background: 'white', boxShadow: '0 4px 16px rgba(0,0,0,0.14)', transform: 'translateX(-50%)' }}
           >
             {icon}
             <div className="leading-none">
-              <div className="text-[10px] font-bold text-ink-900" style={{ letterSpacing: '-0.01em' }}>{points}</div>
+              <div className="text-[10px] font-bold text-ink-900">{points}</div>
               <div className="text-[8px] text-ink-700/55 uppercase tracking-wider">pts · {label}</div>
             </div>
           </motion.div>
         ))}
-
-        {/* Gmail connecting bubble — phase 1 only, disappears when scan completes */}
         <AnimatePresence>
-          {phase >= 1 && !scanComplete && <GmailBubble key="gmail" />}
+          {!scanComplete && <GmailBubble key="gmail" />}
         </AnimatePresence>
-
-        {/* Total pill — only shown once scan is complete */}
         <AnimatePresence>
           {scanComplete && (
             <motion.div
@@ -647,65 +860,8 @@ export function Step1Hook() {
         </AnimatePresence>
       </div>
 
-      {/* ── Bottom: copy + CTA ───────────────────────────────────────────── */}
-      <div
-        className="flex-1 px-5 pt-6 pb-6 flex flex-col"
-        style={{ background: '#F5EBDD' }}
-      >
-        <AnimatePresence mode="wait">
-          {/* ── Hook 1 copy ── */}
-          {phase === 0 && (
-            <motion.div
-              key="hook1"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -12, transition: { duration: 0.18 } }}
-              transition={{ duration: 0.32 }}
-              className="flex flex-col h-full justify-between"
-            >
-              <div>
-                <h2
-                  className="font-display font-bold text-ink-900 leading-[1.05] tracking-tightest mb-3"
-                  style={{ fontSize: 'clamp(1.5rem, 5.5vw, 1.9rem)' }}
-                >
-                  Never lose your<br />points again
-                </h2>
-                <p className="text-sm text-ink-700/70 leading-relaxed mb-1.5">
-                  Shop Oriva anywhere: Amazon, retail stores, or other sites, and still earn rewards.
-                </p>
-                <p className="text-sm text-ink-700/70 leading-relaxed">
-                  <span className="font-semibold text-ink-900">Just connect your Google account</span> and we'll take care of the rest.
-                </p>
-              </div>
-              <div className="space-y-3 mt-5">
-                <button
-                  onClick={handleContinueWithGoogle}
-                  disabled={isLoading}
-                  className="w-full flex items-center justify-center gap-2.5 font-display font-semibold text-sm rounded-pill bg-ink-900 text-cream-100 transition-all active:scale-[0.97] disabled:opacity-60"
-                  style={{ height: 52 }}
-                >
-                  {isLoading
-                    ? <><Loader2 size={16} className="animate-spin" />Connecting…</>
-                    : <><GoogleG /> Continue with Google</>
-                  }
-                </button>
-                <a
-                  href="https://www.loyaltyclaim.com/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full text-ink-700/45 text-sm font-medium py-2 hover:text-ink-700 transition-colors text-center block"
-                >
-                  Learn how it works
-                </a>
-              </div>
-            </motion.div>
-          )}
-
-          {/* ── Hook 2: scanning → found ── */}
-          {phase === 1 && (
-            <Phase1Scanning key="hook2" onNext={() => goToStep(4)} onClose={closeFlow} onScanComplete={() => setScanComplete(true)} />
-          )}
-        </AnimatePresence>
+      <div className="flex-1 px-5 pt-6 pb-6 flex flex-col" style={{ background: '#FFFFFF' }}>
+        <Phase1Scanning onNext={() => goToStep(4)} onClose={closeFlow} onScanComplete={() => setScanComplete(true)} />
       </div>
     </div>
   );
