@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { ShoppingBag } from 'lucide-react';
 import { useApp } from '../context/AppContext';
-import { BRAND_CATALOG, RETAILER_CONFIG } from '../config/constants';
+import { BRAND_CATALOG, RETAILER_CONFIG, DEMO_BRAND } from '../config/constants';
 import { OrivaLogo } from './brand/Logo';
 
 function ActivityRow({ item, index }) {
@@ -55,9 +55,10 @@ const DEMO_ITEMS = [
 ];
 
 export function LoyaltyDashboard() {
-  const { openFlow, resetDemo } = useApp();
+  const { openFlow, backToShop } = useApp();
 
-  const points = 5300;
+  const newlyFoundPoints = 5300;
+  const points = DEMO_BRAND.existingMemberPoints + newlyFoundPoints;
   const dollarValue = (points / 100).toFixed(2);
   const items = DEMO_ITEMS;
 
@@ -68,7 +69,7 @@ export function LoyaltyDashboard() {
         <div className="max-w-screen-xl mx-auto px-4 h-14 flex items-center justify-between">
           <OrivaLogo size={22} color="#1F4F3D" textColor="#0E1410" />
           <button
-            onClick={resetDemo}
+            onClick={backToShop}
             className="flex items-center gap-1.5 text-xs font-medium text-ink-700 hover:text-ink-900 transition"
           >
             <ShoppingBag size={14} strokeWidth={1.6} />

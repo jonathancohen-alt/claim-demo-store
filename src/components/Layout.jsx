@@ -2,6 +2,11 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ShoppingBag, BarChart3, ChevronRight } from 'lucide-react';
 import { DemoControls } from './DemoControls';
+import { useApp } from '../context/AppContext';
+import { DEMO_BRAND } from '../config/constants';
+
+const USER_NAME = 'Jonathan Cohen';
+const USER_INITIALS = 'JC';
 
 const SHOPPER_STEPS = [
   { label: 'Store', path: '/' },
@@ -17,6 +22,8 @@ export function Layout({ children }) {
   const location = useLocation();
   const navigate = useNavigate();
   const isDashboard = location.pathname === '/dashboard';
+  const { stats } = useApp();
+  const totalPoints = DEMO_BRAND.existingMemberPoints + (stats?.totalPoints ?? 0);
 
   const allSteps = [...SHOPPER_STEPS, MERCHANT_STEP];
   const currentIndex = allSteps.findIndex((s) => s.path === location.pathname);
@@ -83,6 +90,25 @@ export function Layout({ children }) {
               <BarChart3 size={13} />
               <span className="hidden sm:block">Merchant</span>
             </button>
+          </div>
+
+          {/* Logged-in user badge */}
+          <div className="flex items-center gap-2 shrink-0 border-l border-gray-200 pl-3">
+            <div className="w-7 h-7 rounded-full bg-[#1F4F3D] text-white text-xs font-bold flex items-center justify-center shrink-0">
+              {USER_INITIALS}
+            </div>
+            <div className="hidden sm:flex flex-col leading-none gap-0.5">
+              <span className="text-xs font-semibold text-gray-800">{USER_NAME}</span>
+              <motion.span
+                key={totalPoints}
+                className="text-xs text-[#1F4F3D] font-medium tabular-nums"
+                initial={{ scale: 1 }}
+                animate={{ scale: [1, 1.15, 1] }}
+                transition={{ duration: 0.35 }}
+              >
+                {totalPoints.toLocaleString()} pts
+              </motion.span>
+            </div>
           </div>
         </div>
       </header>

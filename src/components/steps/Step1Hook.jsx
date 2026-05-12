@@ -628,17 +628,23 @@ export function Step1Hook() {
           {phase >= 1 && !scanComplete && <GmailBubble key="gmail" />}
         </AnimatePresence>
 
-        {/* Total pill */}
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.7, type: 'spring', stiffness: 240 }}
-          className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-2 rounded-full px-5 py-2.5 shadow-xl"
-          style={{ background: 'rgba(14,20,16,0.88)', backdropFilter: 'blur(8px)', whiteSpace: 'nowrap' }}
-        >
-          <span className="text-cream-100 font-display font-extrabold text-base">+5,300</span>
-          <span className="text-cream-100/70 text-xs font-medium">Points earned</span>
-        </motion.div>
+        {/* Total pill — only shown once scan is complete */}
+        <AnimatePresence>
+          {scanComplete && (
+            <motion.div
+              key="total-pill"
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 12 }}
+              transition={{ delay: 0.3, type: 'spring', stiffness: 240 }}
+              className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-2 rounded-full px-5 py-2.5 shadow-xl"
+              style={{ background: 'rgba(14,20,16,0.88)', backdropFilter: 'blur(8px)', whiteSpace: 'nowrap' }}
+            >
+              <span className="text-cream-100 font-display font-extrabold text-base">+5,300</span>
+              <span className="text-cream-100/70 text-xs font-medium">Points earned</span>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* ── Bottom: copy + CTA ───────────────────────────────────────────── */}

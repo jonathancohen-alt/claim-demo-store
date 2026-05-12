@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Heart, Menu, ShoppingBag } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { OrivaLogoWhite } from '../components/brand/Logo';
+import { DEMO_BRAND } from '../config/constants';
 import { ProductMock } from '../components/brand/ProductMock';
 import { PRODUCTS } from '../config/products';
 import { Footer } from '../components/brand/Footer';
@@ -30,7 +31,7 @@ function Img({ src, alt, fallbackBg, className, style, children }) {
 }
 
 // ─── NAV  dark pill, floats on cream ─────────────────────────────────────────
-function Nav({ onCart, cartCount }) {
+function Nav({ onCart, cartCount, totalPoints }) {
   return (
     <nav className="sticky top-0 z-30 px-3 pt-3 pb-0">
       <div
@@ -41,8 +42,9 @@ function Nav({ onCart, cartCount }) {
         <div className="flex items-center">
           <OrivaLogoWhite height={22} />
         </div>
-        {/* Icons */}
-        <div className="flex items-center">
+
+        {/* Icons + User badge */}
+        <div className="flex items-center gap-3">
           <button aria-label="Wishlist" className="w-9 h-9 flex items-center justify-center text-cream-100 hover:opacity-60 transition">
             <Heart size={18} strokeWidth={1.5} />
           </button>
@@ -61,6 +63,19 @@ function Nav({ onCart, cartCount }) {
           <button aria-label="Menu" className="w-9 h-9 flex items-center justify-center text-cream-100 hover:opacity-60 transition">
             <Menu size={18} strokeWidth={1.5} />
           </button>
+
+          {/* User badge */}
+          <div className="flex items-center gap-2 border-l border-white/20 pl-3">
+            <div className="w-7 h-7 rounded-full bg-[#1F4F3D] text-white text-xs font-bold flex items-center justify-center shrink-0">
+              JC
+            </div>
+            <div className="hidden sm:flex flex-col leading-none gap-0.5">
+              <span className="text-xs font-semibold text-white">Jonathan Cohen</span>
+              <span className="text-xs font-medium tabular-nums" style={{ color: '#7EC8A4' }}>
+                {totalPoints.toLocaleString()} pts
+              </span>
+            </div>
+          </div>
         </div>
       </div>
     </nav>
@@ -329,8 +344,9 @@ function RewardsBanner({ onClaim }) {
 
 // ─── STOREFRONT ROOT ──────────────────────────────────────────────────────────
 export function StoreFront() {
-  const { openFlow, cartCount } = useApp();
+  const { openFlow, cartCount, earnedPoints } = useApp();
   const navigate = useNavigate();
+  const totalPoints = DEMO_BRAND.existingMemberPoints + earnedPoints;
 
   function scrollToShop() {
     document.getElementById('shop')?.scrollIntoView({ behavior: 'smooth' });
@@ -340,7 +356,7 @@ export function StoreFront() {
     <div className="min-h-screen bg-cream-100">
 
       {/* 1. Nav pill — above hero */}
-      <Nav onCart={() => navigate('/checkout')} cartCount={cartCount} />
+      <Nav onCart={() => navigate('/checkout')} cartCount={cartCount} totalPoints={totalPoints} />
 
       {/* 2. Hero — full-bleed real photo */}
       <Hero onShop={scrollToShop} />

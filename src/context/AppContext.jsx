@@ -16,6 +16,9 @@ export function AppProvider({ children }) {
   // Post-flow: show loyalty dashboard instead of store
   const [showDashboard, setShowDashboard] = useState(false);
 
+  // Points earned from the scan — persists even after going back to shop
+  const [earnedPoints, setEarnedPoints] = useState(0);
+
   // Cart state
   const [cartItems, setCartItems] = useState([]);
 
@@ -69,10 +72,16 @@ export function AppProvider({ children }) {
     setCurrentStep(n);
   }, [currentStep]);
 
-  // Complete the flow — close modal, show loyalty dashboard
+  // Complete the flow — close modal, show loyalty dashboard, bank 5300 demo pts
   const completeFlow = useCallback(() => {
     setFlowOpen(false);
     setShowDashboard(true);
+    setEarnedPoints(5300);
+  }, []);
+
+  // Go back to store without losing earned points
+  const backToShop = useCallback(() => {
+    setShowDashboard(false);
   }, []);
 
   const resetDemo = useCallback(() => {
@@ -80,6 +89,7 @@ export function AppProvider({ children }) {
     setFlowOpen(false);
     setCurrentStep(0);
     setShowDashboard(false);
+    setEarnedPoints(0);
     setDebugMode(false);
   }, [results]);
 
@@ -97,12 +107,14 @@ export function AppProvider({ children }) {
         currentStep,
         flowDirection,
         showDashboard,
+        earnedPoints,
         openFlow,
         closeFlow,
         nextStep,
         prevStep,
         goToStep,
         completeFlow,
+        backToShop,
 
         // Cart
         cartItems,
