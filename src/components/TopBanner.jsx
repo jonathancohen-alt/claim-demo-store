@@ -36,7 +36,7 @@ export function TopBanner() {
             >
               <span className="text-cream-100/60 text-xs hidden sm:inline">🌿</span>
               <span className="text-cream-100 text-xs font-medium">
-                Earn points on every purchase — even on Amazon and Walmart.
+                Earn points on every purchase, even on Amazon and Walmart.
               </span>
               <span
                 className="text-[11px] font-semibold px-2.5 py-0.5 rounded-pill flex-shrink-0 transition-colors group-hover:bg-white"

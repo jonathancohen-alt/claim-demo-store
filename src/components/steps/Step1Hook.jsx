@@ -704,17 +704,140 @@ function MockGoogleOAuth({ onAllow, onDeny }) {
   );
 }
 
+// ─── Consent right panel: step 0 (hook) ──────────────────────────────────────
+function ConsentHook({ onContinueWithGoogle, onLearnMore, isLoading }) {
+  return (
+    <motion.div
+      key="step-hook"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.22 }}
+      className="absolute inset-0 flex flex-col"
+      style={{ padding: '36px 32px 32px' }}
+    >
+      <img
+        src="/images/claim-logo.png"
+        alt="claim"
+        className="flex-shrink-0 object-contain object-left"
+        style={{ height: 34, width: 'auto', marginBottom: 28 }}
+      />
+
+      <h2
+        className="font-display font-extrabold text-ink-900 leading-[1.05] tracking-tightest"
+        style={{ fontSize: 'clamp(1.5rem, 3.5vw, 1.875rem)', marginBottom: 20 }}
+      >
+        Never lose your<br />points again
+      </h2>
+
+      <p
+        className="text-[0.9375rem] leading-relaxed"
+        style={{ color: 'rgba(14,20,16,0.58)', marginBottom: 12 }}
+      >
+        Shop this brand anywhere on Amazon, retail stores, or other sites and still earn rewards.
+      </p>
+      <p
+        className="text-[0.9375rem] leading-relaxed"
+        style={{ color: 'rgba(14,20,16,0.58)' }}
+      >
+        Just connect your Google account and we'll take care of the rest.
+      </p>
+
+      <div className="flex-1" />
+
+      <button
+        onClick={onContinueWithGoogle}
+        disabled={isLoading}
+        className="w-full flex items-center justify-center gap-2.5 rounded-full font-semibold text-[0.9375rem] transition-all active:scale-[0.97] disabled:opacity-60 flex-shrink-0"
+        style={{ height: 52, background: '#0f0f0f', color: '#ffffff', marginBottom: 14 }}
+      >
+        {isLoading ? (
+          <><Loader2 size={16} className="animate-spin" />Connecting…</>
+        ) : (
+          <><GoogleG />Continue with Google</>
+        )}
+      </button>
+
+      <button
+        onClick={onLearnMore}
+        className="text-center text-sm transition-colors hover:opacity-60 flex-shrink-0"
+        style={{ color: 'rgba(14,20,16,0.45)', fontSize: '0.875rem' }}
+      >
+        Not sure yet?
+      </button>
+    </motion.div>
+  );
+}
+
+// ─── Consent right panel: step 1 (confirmation) ───────────────────────────────
+function ConsentConfirmation({ onNext, onLearnMore }) {
+  return (
+    <motion.div
+      key="step-confirm"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.22 }}
+      className="absolute inset-0 flex flex-col"
+      style={{ padding: '36px 32px 32px' }}
+    >
+      <img
+        src="/images/claim-logo.png"
+        alt="claim"
+        className="flex-shrink-0 object-contain object-left"
+        style={{ height: 34, width: 'auto', marginBottom: 24 }}
+      />
+
+      <h2
+        className="font-display font-extrabold text-ink-900 leading-[1.05] tracking-tightest"
+        style={{ fontSize: 'clamp(1.5rem, 3.5vw, 1.875rem)', marginBottom: 20 }}
+      >
+        You're connected, points are confirmed.
+      </h2>
+      <p
+        className="text-[0.9375rem] leading-relaxed"
+        style={{ color: 'rgba(14,20,16,0.58)' }}
+      >
+        We're now scanning for retailer receipts. More points are on the way!
+      </p>
+
+      <div className="flex-1" />
+
+      <button
+        onClick={onNext}
+        className="w-full flex items-center justify-center rounded-full font-semibold text-[0.9375rem] transition-all active:scale-[0.97] flex-shrink-0"
+        style={{ height: 52, background: '#0f0f0f', color: '#ffffff', marginBottom: 14 }}
+      >
+        Back to shopping
+      </button>
+
+      <button
+        onClick={onLearnMore}
+        className="text-center text-sm transition-colors hover:opacity-60 flex-shrink-0"
+        style={{ color: 'rgba(14,20,16,0.45)', fontSize: '0.875rem', marginBottom: 8 }}
+      >
+        Not sure yet?
+      </button>
+
+    </motion.div>
+  );
+}
+
 // ─── Main Step1Hook ───────────────────────────────────────────────────────────
 export function Step1Hook() {
   const [phase, setPhase] = useState(0);
+  const [consentStep, setConsentStep] = useState(0); // 0 = hook, 1 = confirmation
   const [showMockOAuth, setShowMockOAuth] = useState(false);
   const [showHowItWorks, setShowHowItWorks] = useState(false);
   const [scanComplete, setScanComplete] = useState(false);
   const { nextStep, goToStep, closeFlow, login, authState, isAuthenticated } = useApp();
 
   useEffect(() => {
-    if (isAuthenticated && authState === 'success') setPhase(2);
-  }, [isAuthenticated, authState]);
+    if (isAuthenticated && authState === 'success') {
+      if (phase === 0) setConsentStep(1);
+      else setPhase(2);
+    }
+  }, [isAuthenticated, authState, phase]);
 
   const handleContinueWithGoogle = () => {
     if (import.meta.env.VITE_GOOGLE_CLIENT_ID) {
@@ -724,20 +847,25 @@ export function Step1Hook() {
     }
   };
 
+  const handleConfirmationNext = () => {
+    setPhase(isAuthenticated ? 2 : 1);
+  };
+
   const isLoading = authState === 'loading';
 
   if (phase === 2) {
     return <Hook3Scanner onNext={() => goToStep(2)} />;
   }
 
-  // ── Phase 0: PNG at natural proportions ─────────────────────────────────────
+  // ── Phase 0: Two-panel consent modal ─────────────────────────────────────────
   if (phase === 0) {
     return (
-      <div className="relative">
+      <div className="relative flex" style={{ height: 520 }}>
+        {/* Overlays — cover both panels */}
         <AnimatePresence>
           {showMockOAuth && (
             <MockGoogleOAuth
-              onAllow={() => { setShowMockOAuth(false); setPhase(1); }}
+              onAllow={() => { setShowMockOAuth(false); setConsentStep(1); }}
               onDeny={() => setShowMockOAuth(false)}
             />
           )}
@@ -751,48 +879,37 @@ export function Step1Hook() {
           )}
         </AnimatePresence>
 
-        {/* PNG as-is at natural proportions */}
-        <img
-          src="/images/claim-hook.png"
-          alt="Claim consent screen"
-          className="w-full block"
-        />
-
-        {/* Continue with Google — hit area covering button in PNG */}
-        <button
-          onClick={handleContinueWithGoogle}
-          disabled={isLoading}
-          className="absolute cursor-pointer"
-          style={{
-            top: '62%', left: '47%', right: '4%', height: '7%',
-            background: isLoading ? 'rgba(0,0,0,0.55)' : 'transparent',
-            border: 'none',
-            borderRadius: 14,
-            zIndex: 10,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            gap: 8, color: 'white', fontWeight: 600, fontSize: '0.9375rem',
-          }}
+        {/* Left panel — static, never moves */}
+        <div
+          className="flex-shrink-0 overflow-hidden"
+          style={{ width: '46%' }}
         >
-          {isLoading && <><Loader2 size={16} className="animate-spin" />Connecting…</>}
-        </button>
+          <img
+            src="/images/consent-left-panel.jpg"
+            alt=""
+            className="w-full h-full object-cover"
+          />
+        </div>
 
-        {/* Not sure yet? — covers the "Learn how it works" text in the PNG */}
-        <button
-          onClick={() => setShowHowItWorks(true)}
-          className="absolute cursor-pointer flex items-center justify-center"
-          style={{
-            top: '70%', left: '56%', right: '14%', height: '7%',
-            background: 'white',
-            border: 'none',
-            zIndex: 10,
-            fontSize: '0.8125rem',
-            color: '#6b7280',
-            textDecoration: 'underline',
-            textDecorationColor: '#d1d5db',
-          }}
-        >
-          Not sure yet?
-        </button>
+        {/* Right panel — fades between consent steps */}
+        <div className="relative flex-1 overflow-hidden bg-white">
+          <AnimatePresence mode="wait">
+            {consentStep === 0 ? (
+              <ConsentHook
+                key="hook"
+                onContinueWithGoogle={handleContinueWithGoogle}
+                onLearnMore={() => setShowHowItWorks(true)}
+                isLoading={isLoading}
+              />
+            ) : (
+              <ConsentConfirmation
+                key="confirmation"
+                onNext={handleConfirmationNext}
+                onLearnMore={() => setShowHowItWorks(true)}
+              />
+            )}
+          </AnimatePresence>
+        </div>
       </div>
     );
   }

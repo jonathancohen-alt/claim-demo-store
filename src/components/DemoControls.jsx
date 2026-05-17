@@ -329,33 +329,6 @@ export function DemoControls({ onOpenDebug }) {
               </AnimatePresence>
             </div>
 
-            {/* ── Flow steps ──────────────────────────────────────────── */}
-            <div className="mb-4">
-              <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block mb-2">
-                Jump to Flow Step
-              </label>
-              <div className="flex gap-1.5">
-                {[
-                  { label: 'Hook', i: 0, emoji: '🪝' },
-                  { label: 'Rewards', i: 4, emoji: '🎉' },
-                ].map(({ label, i, emoji }) => (
-                  <button
-                    key={label}
-                    onClick={() => {
-                      navigate('/');
-                      openFlow();
-                      setTimeout(() => goToStep(i), 50);
-                      setOpen(false);
-                    }}
-                    className="flex-1 py-2 text-xs rounded-xl font-semibold transition-all hover:opacity-90 active:scale-[0.97]"
-                    style={{ background: '#1F4F3D', color: '#F5EBDD' }}
-                  >
-                    {emoji} {label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
             {/* ── Debug panel ─────────────────────────────────────────── */}
             {onOpenDebug && (
               <button
