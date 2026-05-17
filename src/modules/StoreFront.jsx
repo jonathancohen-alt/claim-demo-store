@@ -31,7 +31,7 @@ function Img({ src, alt, fallbackBg, className, style, children }) {
 }
 
 // ─── NAV  dark pill, floats on cream ─────────────────────────────────────────
-function Nav({ onCart, cartCount, totalPoints }) {
+function Nav({ onCart, cartCount, totalPoints, onAvatarClick }) {
   return (
     <nav className="sticky top-0 z-30 px-3 pt-3 pb-0">
       <div
@@ -65,7 +65,10 @@ function Nav({ onCart, cartCount, totalPoints }) {
           </button>
 
           {/* User badge */}
-          <div className="flex items-center gap-2 border-l border-white/20 pl-3">
+          <button
+            onClick={onAvatarClick}
+            className="flex items-center gap-2 border-l border-white/20 pl-3 hover:opacity-75 transition-opacity"
+          >
             <div className="w-7 h-7 rounded-full bg-[#1F4F3D] text-white text-xs font-bold flex items-center justify-center shrink-0">
               JC
             </div>
@@ -75,7 +78,7 @@ function Nav({ onCart, cartCount, totalPoints }) {
                 {totalPoints.toLocaleString()} pts
               </span>
             </div>
-          </div>
+          </button>
         </div>
       </div>
     </nav>
@@ -344,7 +347,7 @@ function RewardsBanner({ onClaim }) {
 
 // ─── STOREFRONT ROOT ──────────────────────────────────────────────────────────
 export function StoreFront() {
-  const { openFlow, cartCount, earnedPoints, showBottomBanner } = useApp();
+  const { openFlow, cartCount, earnedPoints, showBottomBanner, goToRewards } = useApp();
   const navigate = useNavigate();
   const totalPoints = DEMO_BRAND.existingMemberPoints + earnedPoints;
 
@@ -356,7 +359,7 @@ export function StoreFront() {
     <div className="min-h-screen bg-cream-100">
 
       {/* 1. Nav pill — above hero */}
-      <Nav onCart={() => navigate('/checkout')} cartCount={cartCount} totalPoints={totalPoints} />
+      <Nav onCart={() => navigate('/checkout')} cartCount={cartCount} totalPoints={totalPoints} onAvatarClick={goToRewards} />
 
       {/* 2. Hero — full-bleed real photo */}
       <Hero onShop={scrollToShop} />

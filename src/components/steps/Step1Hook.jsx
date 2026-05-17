@@ -770,7 +770,7 @@ function ConsentHook({ onContinueWithGoogle, onLearnMore, isLoading }) {
 }
 
 // ─── Consent right panel: step 1 (confirmation) ───────────────────────────────
-function ConsentConfirmation({ onNext, onLearnMore }) {
+function ConsentConfirmation({ onNext, onLearnMore, onViewRewards }) {
   return (
     <motion.div
       key="step-confirm"
@@ -812,9 +812,17 @@ function ConsentConfirmation({ onNext, onLearnMore }) {
       </button>
 
       <button
-        onClick={onLearnMore}
+        onClick={onViewRewards}
         className="text-center text-sm transition-colors hover:opacity-60 flex-shrink-0"
         style={{ color: 'rgba(14,20,16,0.45)', fontSize: '0.875rem', marginBottom: 8 }}
+      >
+        View my rewards page
+      </button>
+
+      <button
+        onClick={onLearnMore}
+        className="text-center text-sm transition-colors hover:opacity-60 flex-shrink-0"
+        style={{ color: 'rgba(14,20,16,0.45)', fontSize: '0.875rem' }}
       >
         Not sure yet?
       </button>
@@ -830,7 +838,7 @@ export function Step1Hook() {
   const [showMockOAuth, setShowMockOAuth] = useState(false);
   const [showHowItWorks, setShowHowItWorks] = useState(false);
   const [scanComplete, setScanComplete] = useState(false);
-  const { nextStep, goToStep, closeFlow, login, authState, isAuthenticated } = useApp();
+  const { nextStep, goToStep, closeFlow, goToRewards, login, authState, isAuthenticated } = useApp();
 
   useEffect(() => {
     if (isAuthenticated && authState === 'success') {
@@ -906,6 +914,7 @@ export function Step1Hook() {
                 key="confirmation"
                 onNext={closeFlow}
                 onLearnMore={() => setShowHowItWorks(true)}
+                onViewRewards={() => { closeFlow(); goToRewards(); }}
               />
             )}
           </AnimatePresence>
