@@ -104,36 +104,182 @@ function CartRow({ item }) {
   );
 }
 
-// ── Confirmed ────────────────────────────────────────────────────────────────
-function OrderConfirmed({ onRewards, onShop }) {
+// ── Confirmed nav ─────────────────────────────────────────────────────────────
+function ConfirmedNav({ onShop }) {
   return (
-    <div className="min-h-screen bg-cream-100 flex flex-col items-center justify-center px-4 text-center">
-      <motion.div
-        initial={{ opacity: 0, scale: 0.92 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ type: 'spring', stiffness: 280, damping: 26 }}
-        className="bg-white rounded-3xl px-8 py-12 max-w-sm w-full border border-ink-900/8"
+    <nav className="sticky top-0 z-30 px-3 pt-3 pb-1">
+      <div
+        className="max-w-screen-xl mx-auto flex items-center justify-between px-4 py-2.5 rounded-pill"
+        style={{ background: '#0E1410' }}
       >
-        <div className="w-14 h-14 rounded-full bg-forest-800 flex items-center justify-center mx-auto mb-6">
-          <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-            <path d="M4 11l5 5 9-9" stroke="#F5EBDD" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-        </div>
-        <h1 className="font-display font-bold text-ink-900 text-2xl tracking-tightest mb-2">Order confirmed!</h1>
-        <p className="text-ink-700/60 text-sm mb-8">Your ORIVA order is on its way. Check your inbox for confirmation.</p>
-        <button
-          onClick={onRewards}
-          className="w-full mb-3 font-display font-semibold text-sm rounded-pill bg-ink-900 text-cream-100 py-3.5"
-        >
-          🌿 Earn rewards for this purchase →
-        </button>
+        <OrivaLogoWhite height={20} />
         <button
           onClick={onShop}
-          className="w-full font-display font-semibold text-sm rounded-pill border-2 border-ink-900/15 text-ink-900 py-3.5"
+          className="text-cream-100/60 text-sm font-medium hover:text-cream-100 transition"
         >
-          Back to shop
+          Continue shopping →
         </button>
-      </motion.div>
+      </div>
+    </nav>
+  );
+}
+
+// ── Confirmed ────────────────────────────────────────────────────────────────
+function OrderConfirmed({ onShop }) {
+  const { cartItems, cartTotal, openFlow } = useApp();
+
+  const [orderNum] = useState(
+    () => `OV-${Math.random().toString(36).slice(2, 8).toUpperCase()}`
+  );
+
+  const deliveryStart = new Date();
+  deliveryStart.setDate(deliveryStart.getDate() + 5);
+  const deliveryEnd = new Date();
+  deliveryEnd.setDate(deliveryEnd.getDate() + 7);
+  const deliveryRange = `${deliveryStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}–${deliveryEnd.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
+
+  return (
+    <div className="min-h-screen bg-cream-100">
+      <ConfirmedNav onShop={onShop} />
+
+      <div className="max-w-screen-sm mx-auto px-4 pt-8 pb-16 space-y-4">
+
+        {/* Hero */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="text-center pt-4 pb-4"
+        >
+          <motion.div
+            initial={{ scale: 0.6, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 22, delay: 0.1 }}
+            className="w-16 h-16 rounded-full bg-forest-800 flex items-center justify-center mx-auto mb-5"
+          >
+            <svg width="24" height="24" viewBox="0 0 22 22" fill="none">
+              <path d="M4 11l5 5 9-9" stroke="#F5EBDD" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </motion.div>
+          <h1 className="font-display font-bold text-ink-900 text-3xl tracking-tightest mb-2">Order confirmed!</h1>
+          <p className="text-ink-700/60 text-sm">Your ORIVA order is on its way. Check your inbox for confirmation.</p>
+          <p className="text-xs text-ink-700/30 mt-2 font-mono tracking-wide">{orderNum}</p>
+        </motion.div>
+
+        {/* Order summary */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+          className="bg-white rounded-3xl px-5 py-5 border border-ink-900/8 space-y-4"
+        >
+          <div className="flex items-center justify-between">
+            <span className="font-display font-bold text-ink-900 text-sm">Order summary</span>
+            <span className="text-xs text-ink-700/40 font-medium">
+              {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+            </span>
+          </div>
+
+          <div className="space-y-4 pt-1">
+            {cartItems.length > 0 ? (
+              cartItems.map(item => <CartRow key={item.id} item={item} />)
+            ) : (
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 rounded-2xl bg-cream-100 flex items-center justify-center flex-shrink-0">
+                  <span className="text-2xl">🌿</span>
+                </div>
+                <div className="flex-1">
+                  <div className="font-semibold text-ink-900 text-sm">ORIVA Order</div>
+                  <div className="text-xs text-ink-700/50 mt-0.5">Qty 1</div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="h-px bg-ink-900/6" />
+
+          <div className="space-y-2 text-sm text-ink-700">
+            <div className="flex justify-between">
+              <span>Subtotal</span>
+              <span className="font-semibold text-ink-900">
+                {cartTotal > 0 ? `$${cartTotal.toFixed(2)}` : '—'}
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-ink-700/60">Shipping</span>
+              <span className="text-forest-700 font-semibold text-xs">Free</span>
+            </div>
+            <div className="flex justify-between font-display font-bold text-ink-900 pt-1 border-t border-ink-900/6">
+              <span>Total</span>
+              <span>{cartTotal > 0 ? `$${cartTotal.toFixed(2)}` : '—'}</span>
+            </div>
+          </div>
+
+          <div
+            className="flex items-center gap-3 rounded-2xl px-4 py-3"
+            style={{ background: 'rgba(31,79,61,0.06)', border: '1px solid rgba(31,79,61,0.10)' }}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1F4F3D" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="1" y="3" width="15" height="13" rx="1"/>
+              <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/>
+              <circle cx="5.5" cy="18.5" r="2.5"/>
+              <circle cx="18.5" cy="18.5" r="2.5"/>
+            </svg>
+            <div>
+              <div className="text-xs font-semibold text-ink-900">Estimated delivery</div>
+              <div className="text-xs text-ink-700/55 mt-0.5">{deliveryRange} · Standard shipping</div>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Claim banner */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.25 }}
+          className="rounded-3xl px-6 py-8 relative overflow-hidden"
+          style={{ background: '#0E1410', color: '#F5EBDD' }}
+        >
+          <div className="absolute -top-16 -right-16 w-56 h-56 rounded-full opacity-20 blur-3xl" style={{ background: '#7B8DD4' }} />
+          <div className="absolute -bottom-20 -left-10 w-56 h-56 rounded-full opacity-15 blur-3xl" style={{ background: '#E8568C' }} />
+          <div className="relative z-10">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] opacity-50 mb-2">ORIVA Rewards</p>
+            <h2
+              className="font-display text-cream-100 leading-[0.94] tracking-tightest mb-3"
+              style={{ fontSize: 'clamp(1.3rem, 5vw, 1.85rem)' }}
+            >
+              Points for this order:<br />
+              <span className="font-extrabold">confirmed. Find more.</span>
+            </h2>
+            <p className="text-cream-100/60 text-xs leading-relaxed mb-5 max-w-xs">
+              Buying ORIVA on Amazon too? Connect your inbox and we'll find those receipts too.
+            </p>
+            <button
+              onClick={openFlow}
+              className="bg-cream-100 text-ink-900 font-display font-semibold text-sm px-6 py-3 rounded-pill hover:bg-white transition active:scale-[0.97]"
+            >
+              Claim my rewards →
+            </button>
+          </div>
+        </motion.div>
+
+        {/* Back to shop */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.35 }}
+        >
+          <button
+            onClick={onShop}
+            className="w-full font-display font-semibold text-sm rounded-pill border-2 border-ink-900/15 text-ink-900 py-3.5 transition hover:border-ink-900/30"
+          >
+            Back to shop
+          </button>
+        </motion.div>
+
+      </div>
+
+      <Footer />
     </div>
   );
 }
@@ -146,7 +292,7 @@ export function Checkout() {
   const [confirmed, setConfirmed] = useState(false);
 
   if (confirmed) {
-    return <OrderConfirmed onRewards={openFlow} onShop={() => navigate('/')} />;
+    return <OrderConfirmed onShop={() => navigate('/')} />;
   }
 
   return (

@@ -310,7 +310,7 @@ function MissionSection() {
 // ─── REWARDS BANNER ──────────────────────────────────────────────────────────
 function RewardsBanner({ onClaim }) {
   return (
-    <section className="px-4 max-w-screen-xl mx-auto">
+    <section id="capture-bottom-banner" className="px-4 max-w-screen-xl mx-auto">
       <div
         className="rounded-3xl px-6 py-8 relative overflow-hidden"
         style={{ background: '#0E1410', color: '#F5EBDD' }}
@@ -344,7 +344,7 @@ function RewardsBanner({ onClaim }) {
 
 // ─── STOREFRONT ROOT ──────────────────────────────────────────────────────────
 export function StoreFront() {
-  const { openFlow, cartCount, earnedPoints } = useApp();
+  const { openFlow, cartCount, earnedPoints, showBottomBanner } = useApp();
   const navigate = useNavigate();
   const totalPoints = DEMO_BRAND.existingMemberPoints + earnedPoints;
 
@@ -396,7 +396,9 @@ export function StoreFront() {
       <section className="pb-5 px-0"><MissionSection /></section>
 
       {/* 6. Rewards banner */}
-      <section className="pb-8"><RewardsBanner onClaim={openFlow} /></section>
+      {showBottomBanner && (
+        <section className="pb-8"><RewardsBanner onClaim={openFlow} /></section>
+      )}
 
       {/* 7. Footer */}
       <Footer />
