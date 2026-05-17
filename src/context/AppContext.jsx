@@ -19,6 +19,16 @@ export function AppProvider({ children }) {
   // Points earned from the scan — persists even after going back to shop
   const [earnedPoints, setEarnedPoints] = useState(0);
 
+  // ── Touchpoint visibility toggles ─────────────────────────────────────────
+  const [showTopBanner,     setShowTopBanner]     = useState(true);
+  const [showBottomBanner,  setShowBottomBanner]  = useState(true);
+  const [showProductBanner, setShowProductBanner] = useState(true);
+  const [showRewardsBanner, setShowRewardsBanner] = useState(true);
+
+  // ── Popup auto-trigger ────────────────────────────────────────────────────
+  const [popupAutoEnabled, setPopupAutoEnabled] = useState(false);
+  const [popupAutoDelay,   setPopupAutoDelay]   = useState(8); // seconds
+
   // Cart state
   const [cartItems, setCartItems] = useState([]);
 
@@ -84,6 +94,11 @@ export function AppProvider({ children }) {
     setShowDashboard(false);
   }, []);
 
+  // Jump directly to rewards page (without full flow)
+  const goToRewards = useCallback(() => {
+    setShowDashboard(true);
+  }, []);
+
   const resetDemo = useCallback(() => {
     results.clearResults();
     setFlowOpen(false);
@@ -91,6 +106,7 @@ export function AppProvider({ children }) {
     setShowDashboard(false);
     setEarnedPoints(0);
     setDebugMode(false);
+    setPopupAutoEnabled(false);
   }, [results]);
 
   return (
@@ -115,6 +131,17 @@ export function AppProvider({ children }) {
         goToStep,
         completeFlow,
         backToShop,
+        goToRewards,
+
+        // Touchpoint toggles
+        showTopBanner,     setShowTopBanner,
+        showBottomBanner,  setShowBottomBanner,
+        showProductBanner, setShowProductBanner,
+        showRewardsBanner, setShowRewardsBanner,
+
+        // Popup auto-trigger
+        popupAutoEnabled, setPopupAutoEnabled,
+        popupAutoDelay,   setPopupAutoDelay,
 
         // Cart
         cartItems,

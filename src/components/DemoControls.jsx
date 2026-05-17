@@ -1,15 +1,177 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Settings, RotateCcw, Bug, X, BarChart3, ShoppingBag } from 'lucide-react';
+import {
+  Settings, RotateCcw, Bug, X, BarChart3, ShoppingBag,
+  Download, ArrowRight, Zap,
+} from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { useNavigate, useLocation } from 'react-router-dom';
+import html2canvas from 'html2canvas';
 
+const DELAY_OPTIONS = [3, 5, 10, 30];
+
+// ── Toggle switch ─────────────────────────────────────────────────────────────
+function Toggle({ value, onChange }) {
+  return (
+    <button
+      onClick={() => onChange(!value)}
+      className="flex-shrink-0 focus:outline-none"
+      aria-pressed={value}
+    >
+      <div
+        className="w-8 h-4 rounded-full transition-colors relative"
+        style={{ background: value ? '#1F4F3D' : '#CBD5E1' }}
+      >
+        <div
+          className="absolute top-0.5 w-3 h-3 rounded-full bg-white shadow transition-transform"
+          style={{ transform: value ? 'translateX(16px)' : 'translateX(2px)' }}
+        />
+      </div>
+    </button>
+  );
+}
+
+// ── Async download helper ─────────────────────────────────────────────────────
+async function capturePlacement(elementId, filename) {
+  const el = document.getElementById(elementId);
+  if (!el) {
+    console.warn(`[DemoControls] Element #${elementId} not found`);
+    return false;
+  }
+  try {
+    const canvas = await html2canvas(el, {
+      useCORS: true,
+      scale: 2,
+      backgroundColor: null,
+    });
+    const link = document.createElement('a');
+    link.download = filename;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+    return true;
+  } catch (err) {
+    console.error('[DemoControls] html2canvas error:', err);
+    return false;
+  }
+}
+
+// ── Main component ────────────────────────────────────────────────────────────
 export function DemoControls({ onOpenDebug }) {
   const [open, setOpen] = useState(false);
-  const { debugMode, setDebugMode, resetDemo, openFlow, goToStep, results } = useApp();
+  const [downloading, setDownloading] = useState(null);
+
+  const app = useApp();
+  const {
+    resetDemo, openFlow, goToStep, results, goToRewards,
+    showTopBanner,     setShowTopBanner,
+    showBottomBanner,  setShowBottomBanner,
+    showProductBanner, setShowProductBanner,
+    showRewardsBanner, setShowRewardsBanner,
+    popupAutoEnabled,  setPopupAutoEnabled,
+    popupAutoDelay,    setPopupAutoDelay,
+  } = app;
+
   const navigate = useNavigate();
   const location = useLocation();
   const isMerchant = location.pathname === '/merchant';
+
+  // ── Download handler ────────────────────────────────────────────────────────
+  const handleDownload = useCallback(async (placement) => {
+    if (!placement.captureId) return;
+    setDownloading(placement.captureId);
+
+    try {
+      // 1. Ensure placement is visible
+      const wasVisible = placement.visible;
+      if (!wasVisible && placement.setter) placement.setter(true);
+
+      // 2. Navigate if needed
+      if (placement.route && location.pathname !== placement.route) {
+        navigate(placement.route);
+        await new Promise((r) => setTimeout(r, 400));
+      } else if (placement.useRewards) {
+        goToRewards();
+        await new Promise((r) => setTimeout(r, 300));
+      }
+
+      // 3. Wait for render
+      await new Promise((r) => setTimeout(r, 500));
+
+      // 4. Scroll element into view
+      const el = document.getElementById(placement.captureId);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        await new Promise((r) => setTimeout(r, 350));
+      }
+
+      // 5. Capture + download
+      await capturePlacement(
+        placement.captureId,
+        `oriva-${placement.label.toLowerCase().replace(/ /g, '-')}.png`
+      );
+
+      // 6. Restore hidden state
+      if (!wasVisible && placement.setter) placement.setter(false);
+    } finally {
+      setDownloading(null);
+    }
+  }, [location.pathname, navigate, goToRewards]);
+
+  // ── Placement definitions ───────────────────────────────────────────────────
+  const placements = [
+    {
+      label: 'Top Banner',
+      captureId: 'capture-top-banner',
+      visible: showTopBanner,
+      setter: setShowTopBanner,
+      route: '/',
+      onJump: () => {
+        navigate('/');
+        setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 150);
+        setOpen(false);
+      },
+    },
+    {
+      label: 'Bottom Banner',
+      captureId: 'capture-bottom-banner',
+      visible: showBottomBanner,
+      setter: setShowBottomBanner,
+      route: '/',
+      onJump: () => {
+        navigate('/');
+        setTimeout(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }), 350);
+        setOpen(false);
+      },
+    },
+    {
+      label: 'Product Page',
+      captureId: 'capture-product-banner',
+      visible: showProductBanner,
+      setter: setShowProductBanner,
+      route: '/product/1',
+      onJump: () => {
+        navigate('/product/1');
+        setTimeout(() => {
+          document.getElementById('capture-product-banner')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 500);
+        setOpen(false);
+      },
+    },
+    {
+      label: 'Rewards Banner',
+      captureId: 'capture-rewards-banner',
+      visible: showRewardsBanner,
+      setter: setShowRewardsBanner,
+      useRewards: true,
+      onJump: () => {
+        goToRewards();
+        setTimeout(() => {
+          document.getElementById('capture-rewards-banner')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 450);
+        setOpen(false);
+      },
+    },
+  ];
 
   return (
     <div className="fixed bottom-6 right-6 z-50">
@@ -20,18 +182,24 @@ export function DemoControls({ onOpenDebug }) {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.95 }}
             transition={{ duration: 0.18 }}
-            className="mb-3 bg-white border border-gray-200 rounded-2xl shadow-xl p-4 w-64"
+            className="mb-3 bg-white border border-gray-200 rounded-2xl shadow-xl p-4 w-80"
           >
+            {/* Header */}
             <div className="flex justify-between items-center mb-4">
               <h3 className="font-bold text-slate-900 text-sm">Demo Controls</h3>
-              <button onClick={() => setOpen(false)} className="text-gray-400 hover:text-gray-600 w-6 h-6 flex items-center justify-center">
+              <button
+                onClick={() => setOpen(false)}
+                className="text-gray-400 hover:text-gray-600 w-6 h-6 flex items-center justify-center"
+              >
                 <X size={14} />
               </button>
             </div>
 
-            {/* View toggle */}
+            {/* ── View toggle ─────────────────────────────────────────── */}
             <div className="mb-4">
-              <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide block mb-2">View</label>
+              <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block mb-2">
+                View
+              </label>
               <div className="flex gap-1.5 bg-slate-100 p-1 rounded-xl">
                 <button
                   onClick={() => { navigate('/'); setOpen(false); }}
@@ -54,12 +222,119 @@ export function DemoControls({ onOpenDebug }) {
               </div>
             </div>
 
-            {/* Jump to step */}
-            <div className="mb-4">
-              <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide block mb-2">Jump to Flow Step</label>
+            {/* ── Touchpoint placements ───────────────────────────────── */}
+            <div className="mb-1">
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+                  Touchpoints
+                </label>
+                <span className="text-[10px] text-slate-400 font-medium">toggle · jump · export</span>
+              </div>
 
-              {/* Active flow steps */}
-              <div className="flex gap-1.5 mb-2">
+              <div className="space-y-0.5">
+                {placements.map((p) => (
+                  <div
+                    key={p.label}
+                    className="flex items-center gap-2 py-1.5 px-2 rounded-xl group hover:bg-slate-50 transition-colors"
+                  >
+                    {/* Toggle */}
+                    <Toggle value={p.visible} onChange={p.setter} />
+
+                    {/* Label */}
+                    <span
+                      className="flex-1 text-xs font-medium transition-colors"
+                      style={{ color: p.visible ? '#1E293B' : '#94A3B8' }}
+                    >
+                      {p.label}
+                    </span>
+
+                    {/* Jump */}
+                    <button
+                      onClick={p.onJump}
+                      title={`Go to ${p.label}`}
+                      className="w-6 h-6 flex items-center justify-center text-slate-300 hover:text-[#1F4F3D] opacity-0 group-hover:opacity-100 transition-all"
+                    >
+                      <ArrowRight size={12} />
+                    </button>
+
+                    {/* Download */}
+                    <button
+                      onClick={() => handleDownload(p)}
+                      disabled={!!downloading}
+                      title={`Export ${p.label}`}
+                      className="w-6 h-6 flex items-center justify-center text-slate-300 hover:text-[#1F4F3D] opacity-0 group-hover:opacity-100 transition-all disabled:pointer-events-none"
+                    >
+                      {downloading === p.captureId ? (
+                        <div className="w-3 h-3 border border-slate-400 border-t-transparent rounded-full animate-spin" />
+                      ) : (
+                        <Download size={12} />
+                      )}
+                    </button>
+                  </div>
+                ))}
+
+                {/* Pop-up row — jump only */}
+                <div className="flex items-center gap-2 py-1.5 px-2 rounded-xl group hover:bg-slate-50 transition-colors">
+                  {/* Spacer where toggle would be (jump-to opens the popup directly) */}
+                  <div className="w-8 flex-shrink-0 flex items-center justify-center">
+                    <Zap size={13} className="text-slate-300" />
+                  </div>
+                  <span className="flex-1 text-xs font-medium text-slate-700">Pop-up</span>
+                  <button
+                    onClick={() => { navigate('/'); openFlow(); setOpen(false); }}
+                    title="Open pop-up"
+                    className="w-6 h-6 flex items-center justify-center text-slate-300 hover:text-[#1F4F3D] opacity-0 group-hover:opacity-100 transition-all"
+                  >
+                    <ArrowRight size={12} />
+                  </button>
+                  <div className="w-6" />
+                </div>
+              </div>
+            </div>
+
+            {/* ── Auto Pop-up ─────────────────────────────────────────── */}
+            <div className="mt-3 mb-4 border-t border-slate-100 pt-3">
+              <div className="flex items-center gap-2 mb-2">
+                <Toggle value={popupAutoEnabled} onChange={setPopupAutoEnabled} />
+                <span className="flex-1 text-xs font-semibold text-slate-700">Auto Pop-up</span>
+                {popupAutoEnabled && (
+                  <span className="text-[10px] text-slate-400">fires after delay</span>
+                )}
+              </div>
+              <AnimatePresence>
+                {popupAutoEnabled && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="flex gap-1.5 pl-10 pb-1">
+                      {DELAY_OPTIONS.map((d) => (
+                        <button
+                          key={d}
+                          onClick={() => setPopupAutoDelay(d)}
+                          className="px-2.5 py-1 rounded-lg text-xs font-semibold transition-all"
+                          style={{
+                            background: popupAutoDelay === d ? '#1F4F3D' : '#F1F5F9',
+                            color: popupAutoDelay === d ? '#F5EBDD' : '#64748B',
+                          }}
+                        >
+                          {d}s
+                        </button>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* ── Flow steps ──────────────────────────────────────────── */}
+            <div className="mb-4">
+              <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block mb-2">
+                Jump to Flow Step
+              </label>
+              <div className="flex gap-1.5">
                 {[
                   { label: 'Hook', i: 0, emoji: '🪝' },
                   { label: 'Rewards', i: 4, emoji: '🎉' },
@@ -72,23 +347,23 @@ export function DemoControls({ onOpenDebug }) {
                       setTimeout(() => goToStep(i), 50);
                       setOpen(false);
                     }}
-                    className="flex-1 py-2 text-xs rounded-lg bg-[#1F4F3D] text-white hover:bg-[#2a6b52] transition-all font-semibold"
+                    className="flex-1 py-2 text-xs rounded-xl font-semibold transition-all hover:opacity-90 active:scale-[0.97]"
+                    style={{ background: '#1F4F3D', color: '#F5EBDD' }}
                   >
                     {emoji} {label}
                   </button>
                 ))}
               </div>
-
             </div>
 
-            {/* Debug drawer button */}
+            {/* ── Debug panel ─────────────────────────────────────────── */}
             {onOpenDebug && (
               <button
                 onClick={() => { onOpenDebug(); setOpen(false); }}
                 className="w-full flex items-center gap-2 py-2 px-3 rounded-xl bg-slate-900 text-emerald-400 hover:bg-slate-800 text-xs font-mono font-semibold transition-all mb-3"
               >
                 <Bug size={12} />
-                Open Debug Panel
+                Debug Panel
                 {results.length > 0 && (
                   <span className="ml-auto bg-emerald-900 text-emerald-400 px-1.5 py-0.5 rounded-full text-xs">
                     {results.length}
@@ -97,7 +372,7 @@ export function DemoControls({ onOpenDebug }) {
               </button>
             )}
 
-            {/* Reset */}
+            {/* ── Reset ───────────────────────────────────────────────── */}
             <button
               onClick={() => { resetDemo(); navigate('/'); setOpen(false); }}
               className="w-full flex items-center justify-center gap-2 py-2 rounded-xl border border-red-200 text-red-500 hover:bg-red-50 text-xs font-semibold transition-all"
@@ -109,14 +384,17 @@ export function DemoControls({ onOpenDebug }) {
         )}
       </AnimatePresence>
 
-      {/* Button row */}
+      {/* ── FAB toggle ──────────────────────────────────────────────── */}
       <div className="flex items-center gap-2">
-        {/* Demo Controls toggle */}
         <button
           onClick={() => setOpen((o) => !o)}
           className="flex items-center gap-2 bg-[#1E3A5F] text-white px-4 py-2.5 rounded-xl shadow-lg hover:bg-[#2a4f82] transition-all font-semibold text-sm"
         >
-          <Settings size={15} className={`transition-transform duration-300 ${open ? 'rotate-90' : ''}`} />
+          <Settings
+            size={15}
+            className="transition-transform duration-300"
+            style={{ transform: open ? 'rotate(90deg)' : 'rotate(0deg)' }}
+          />
           Demo Controls
         </button>
       </div>
