@@ -808,7 +808,7 @@ function ConsentConfirmation({ onNext, onLearnMore }) {
         className="w-full flex items-center justify-center rounded-full font-semibold text-[0.9375rem] transition-all active:scale-[0.97] flex-shrink-0"
         style={{ height: 52, background: '#0f0f0f', color: '#ffffff', marginBottom: 14 }}
       >
-        Back to shopping
+        Continue shopping
       </button>
 
       <button
@@ -904,7 +904,7 @@ export function Step1Hook() {
             ) : (
               <ConsentConfirmation
                 key="confirmation"
-                onNext={handleConfirmationNext}
+                onNext={closeFlow}
                 onLearnMore={() => setShowHowItWorks(true)}
               />
             )}
