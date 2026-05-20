@@ -69,6 +69,7 @@ export function DemoControls({ onOpenDebug }) {
     showRewardsBanner, setShowRewardsBanner,
     popupAutoEnabled,  setPopupAutoEnabled,
     popupAutoDelay,    setPopupAutoDelay,
+    useLiveOAuth,      setUseLiveOAuth,
   } = app;
 
   const navigate = useNavigate();
@@ -327,6 +328,29 @@ export function DemoControls({ onOpenDebug }) {
                   </motion.div>
                 )}
               </AnimatePresence>
+            </div>
+
+            {/* ── Live OAuth toggle ───────────────────────────────────── */}
+            <div className="mb-4 border-t border-slate-100 pt-3">
+              <div className="flex items-center gap-2">
+                <Toggle value={useLiveOAuth} onChange={setUseLiveOAuth} />
+                <span className="flex-1 text-xs font-semibold text-slate-700">Use live OAuth</span>
+                {useLiveOAuth ? (
+                  <span
+                    className="text-[10px] font-bold px-1.5 py-0.5 rounded-md tracking-wide"
+                    style={{ background: '#FEF2F2', color: '#DC2626', border: '1px solid #FECACA' }}
+                  >
+                    LIVE
+                  </span>
+                ) : (
+                  <span className="text-[10px] text-slate-400 font-medium">mock</span>
+                )}
+              </div>
+              {useLiveOAuth && (
+                <p className="mt-1.5 ml-10 text-[10px] text-amber-600 leading-tight">
+                  Google consent → real OAuth service
+                </p>
+              )}
             </div>
 
             {/* ── Debug panel ─────────────────────────────────────────── */}

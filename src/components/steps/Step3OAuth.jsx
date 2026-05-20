@@ -2,9 +2,10 @@ import { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Loader2, AlertCircle } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
+import { LIVE_OAUTH_URL } from '../../config/constants';
 
 export function Step3OAuth() {
-  const { login, authState, authError, isAuthenticated, nextStep } = useApp();
+  const { login, authState, authError, isAuthenticated, nextStep, useLiveOAuth } = useApp();
 
   // Auto-advance when OAuth succeeds
   useEffect(() => {
@@ -132,8 +133,8 @@ export function Step3OAuth() {
           </motion.div>
         ) : (
           <button
-            onClick={login}
-            disabled={isLoading}
+            onClick={useLiveOAuth ? () => { window.location.href = LIVE_OAUTH_URL; } : login}
+            disabled={isLoading && !useLiveOAuth}
             className="w-full flex items-center justify-center gap-3 font-bold text-base rounded-2xl transition-all active:scale-95 disabled:opacity-60"
             style={{ background: '#2563EB', color: '#fff', height: 56 }}
           >

@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Loader2 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { PRODUCTS } from '../../config/products';
+import { LIVE_OAUTH_URL } from '../../config/constants';
 
 // ─── Retailer icons ───────────────────────────────────────────────────────────
 function AmazonIcon({ size = 28 }) {
@@ -838,7 +839,7 @@ export function Step1Hook() {
   const [showMockOAuth, setShowMockOAuth] = useState(false);
   const [showHowItWorks, setShowHowItWorks] = useState(false);
   const [scanComplete, setScanComplete] = useState(false);
-  const { nextStep, goToStep, closeFlow, goToRewards, login, authState, isAuthenticated } = useApp();
+  const { nextStep, goToStep, closeFlow, goToRewards, login, authState, isAuthenticated, useLiveOAuth } = useApp();
 
   useEffect(() => {
     if (isAuthenticated && authState === 'success') {
@@ -848,7 +849,9 @@ export function Step1Hook() {
   }, [isAuthenticated, authState, phase]);
 
   const handleContinueWithGoogle = () => {
-    if (import.meta.env.VITE_GOOGLE_CLIENT_ID) {
+    if (useLiveOAuth) {
+      window.location.href = LIVE_OAUTH_URL;
+    } else if (import.meta.env.VITE_GOOGLE_CLIENT_ID) {
       login();
     } else {
       setShowMockOAuth(true);

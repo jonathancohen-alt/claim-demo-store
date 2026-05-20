@@ -29,6 +29,9 @@ export function AppProvider({ children }) {
   const [popupAutoEnabled, setPopupAutoEnabled] = useState(false);
   const [popupAutoDelay,   setPopupAutoDelay]   = useState(8); // seconds
 
+  // ── OAuth mode — off by default so presenters don't accidentally hit the real service
+  const [useLiveOAuth, setUseLiveOAuth] = useState(false);
+
   // Cart state
   const [cartItems, setCartItems] = useState([]);
 
@@ -142,6 +145,9 @@ export function AppProvider({ children }) {
         // Popup auto-trigger
         popupAutoEnabled, setPopupAutoEnabled,
         popupAutoDelay,   setPopupAutoDelay,
+
+        // OAuth mode
+        useLiveOAuth, setUseLiveOAuth,
 
         // Cart
         cartItems,

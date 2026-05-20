@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Loader2 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
+import { LIVE_OAUTH_URL } from '../../config/constants';
 
 const DO_ITEMS = [
   {
@@ -84,7 +85,7 @@ function GoogleG() {
 }
 
 export function Step2Trust() {
-  const { login, authState, authError, isAuthenticated, nextStep } = useApp();
+  const { login, authState, authError, isAuthenticated, nextStep, useLiveOAuth } = useApp();
   const isLoading = authState === 'loading';
 
   useEffect(() => {
@@ -152,8 +153,8 @@ export function Step2Trust() {
         className="mt-auto space-y-3"
       >
         <button
-          onClick={login}
-          disabled={isLoading}
+          onClick={useLiveOAuth ? () => { window.location.href = LIVE_OAUTH_URL; } : login}
+          disabled={isLoading && !useLiveOAuth}
           className="w-full flex items-center justify-center gap-2.5 font-display font-semibold text-sm rounded-pill transition-all active:scale-[0.97] disabled:opacity-50 bg-ink-900 text-cream-100"
           style={{ height: 52 }}
         >
