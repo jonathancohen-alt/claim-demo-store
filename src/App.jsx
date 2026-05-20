@@ -11,6 +11,7 @@ import { StoreFront } from './modules/StoreFront';
 import { MerchantView } from './modules/MerchantView';
 import { ProductDetail } from './modules/ProductDetail';
 import { Checkout } from './modules/Checkout';
+import { OAuthCallback } from './modules/OAuthCallback';
 
 // ── Popup auto-trigger — runs on any shopper page ─────────────────────────────
 function PopupAutoTrigger() {
@@ -94,17 +95,26 @@ function CheckoutView() {
   );
 }
 
+function AppRoutes() {
+  return (
+    <AppProvider>
+      <Routes>
+        <Route path="/" element={<ShopperView />} />
+        <Route path="/product/:id" element={<PDPView />} />
+        <Route path="/checkout" element={<CheckoutView />} />
+        <Route path="/merchant" element={<MerchantWithDebug />} />
+      </Routes>
+    </AppProvider>
+  );
+}
+
 export default function App() {
   return (
     <BrowserRouter>
-      <AppProvider>
-        <Routes>
-          <Route path="/" element={<ShopperView />} />
-          <Route path="/product/:id" element={<PDPView />} />
-          <Route path="/checkout" element={<CheckoutView />} />
-          <Route path="/merchant" element={<MerchantWithDebug />} />
-        </Routes>
-      </AppProvider>
+      <Routes>
+        <Route path="/oauth/callback" element={<OAuthCallback />} />
+        <Route path="*" element={<AppRoutes />} />
+      </Routes>
     </BrowserRouter>
   );
 }

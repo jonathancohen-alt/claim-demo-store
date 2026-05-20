@@ -325,13 +325,16 @@ export const DEMO_BRAND = {
   existingMemberPoints: 2340,
 };
 
-// Live OAuth URL — used when the "Use live OAuth" toggle is on in Demo Controls
-export const LIVE_OAUTH_URL =
-  'https://lr-service-omnichannel-api-default.yotpo.xyz' +
-  '?provider=GMAIL' +
-  '&merchant_id=1' +
-  '&redirect_uri=https%3A%2F%2Flr-service-omnichannel-api-default.yotpo.xyz%2Fv1%2Foauth%2Fcallback' +
-  '&success_redirect_url=' + encodeURIComponent('http://localhost:5173/oauth/callback');
+// Live OAuth — production omnichannel service authorize endpoint
+export const LIVE_OAUTH_BASE = 'https://lr-service-omnichannel-api-default.yotpo.xyz';
+
+export function buildLiveOAuthUrl({ merchantId = 1 } = {}) {
+  const params = new URLSearchParams({
+    provider: 'GMAIL',
+    merchant_id: String(merchantId),
+  });
+  return `${LIVE_OAUTH_BASE}/v1/oauth/authorize?${params}`;
+}
 
 // Local storage keys
 export const STORAGE_KEYS = {
