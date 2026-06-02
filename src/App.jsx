@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useSearchParams } from 'react-router-dom';
 import { AppProvider } from './context/AppContext';
 import { useApp } from './context/AppContext';
 import { FlowModal } from './components/FlowModal';
@@ -12,6 +12,24 @@ import { MerchantView } from './modules/MerchantView';
 import { ProductDetail } from './modules/ProductDetail';
 import { Checkout } from './modules/Checkout';
 import { OAuthCallback } from './modules/OAuthCallback';
+
+// ── URL query auto-trigger — opens flow immediately when ?open=1 is present ───
+function QueryAutoTrigger() {
+  const { flowOpen, openFlow } = useApp();
+  const [searchParams] = useSearchParams();
+  const firedRef = useRef(false);
+
+  useEffect(() => {
+    if (firedRef.current || flowOpen) return;
+    const param = searchParams.get('open');
+    if (param === '1' || param === 'true') {
+      firedRef.current = true;
+      openFlow();
+    }
+  }, [searchParams, flowOpen, openFlow]);
+
+  return null;
+}
 
 // ── Popup auto-trigger — runs on any shopper page ─────────────────────────────
 function PopupAutoTrigger() {
@@ -63,6 +81,7 @@ function ShopperView() {
       {showTopBanner && <TopBanner />}
       {showDashboard ? <LoyaltyDashboard /> : <StoreFront />}
       <FlowModal />
+      <QueryAutoTrigger />
       <PopupAutoTrigger />
       <DebugDrawer open={debugOpen} onClose={() => setDebugOpen(false)} />
       <DemoControls onOpenDebug={() => setDebugOpen(true)} />
@@ -77,6 +96,7 @@ function PDPView() {
       {showTopBanner && <TopBanner />}
       <ProductDetail />
       <FlowModal />
+      <QueryAutoTrigger />
       <PopupAutoTrigger />
       <DemoControls />
     </div>
