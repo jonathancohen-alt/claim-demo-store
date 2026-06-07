@@ -12,6 +12,7 @@ import { MerchantView } from './modules/MerchantView';
 import { ProductDetail } from './modules/ProductDetail';
 import { Checkout } from './modules/Checkout';
 import { OAuthCallback } from './modules/OAuthCallback';
+import { BrandAnalytics } from './modules/BrandAnalytics';
 
 // ── URL query auto-trigger — opens flow immediately when ?open=1 is present ───
 function QueryAutoTrigger() {
@@ -123,6 +124,7 @@ function AppRoutes() {
         <Route path="/product/:id" element={<PDPView />} />
         <Route path="/checkout" element={<CheckoutView />} />
         <Route path="/merchant" element={<MerchantWithDebug />} />
+        <Route path="/brand-analytics" element={<BrandAnalytics />} />
       </Routes>
     </AppProvider>
   );

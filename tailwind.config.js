@@ -10,6 +10,8 @@ export default {
         display: ['Sora', 'Inter', 'system-ui', 'sans-serif'],
         sans: ['Inter', 'system-ui', 'sans-serif'],
         serif: ['"Instrument Serif"', 'Georgia', 'serif'],
+        fraunces: ['Fraunces', 'Georgia', 'serif'],
+        'dm-sans': ['"DM Sans"', 'Inter', 'system-ui', 'sans-serif'],
       },
       colors: {
         // ORIVA brand palette
