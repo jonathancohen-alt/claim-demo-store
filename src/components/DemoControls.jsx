@@ -74,7 +74,7 @@ export function DemoControls({ onOpenDebug }) {
 
   const navigate = useNavigate();
   const location = useLocation();
-  const isMerchant = location.pathname === '/merchant';
+  const isMerchant = location.pathname === '/brand-analytics';
 
   // ── Download handler ────────────────────────────────────────────────────────
   const handleDownload = useCallback(async (placement) => {
@@ -212,7 +212,7 @@ export function DemoControls({ onOpenDebug }) {
                   Shopper
                 </button>
                 <button
-                  onClick={() => { navigate('/merchant'); setOpen(false); }}
+                  onClick={() => { navigate('/brand-analytics'); setOpen(false); }}
                   className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                     isMerchant ? 'bg-[#1F4F3D] text-white shadow-sm' : 'text-slate-500 hover:text-slate-700'
                   }`}
