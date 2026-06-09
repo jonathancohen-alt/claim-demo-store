@@ -5,7 +5,7 @@ import {
 } from 'recharts';
 import {
   TrendingUp, ShoppingBag, Users, Star, ArrowUpRight,
-  Eye, Package, BarChart2, AlertCircle, ChevronUp, ChevronDown,
+  Eye, Package, BarChart2, AlertCircle, ChevronUp, ChevronDown, Download, Crown,
 } from 'lucide-react';
 
 // ─── Brand tokens ──────────────────────────────────────────────────────────────
@@ -38,7 +38,7 @@ const RETAILERS = {
 
 // ─── Mock data ─────────────────────────────────────────────────────────────────
 const DATA = {
-  heroShoppers: 3847,
+  heroShoppers: 2727,
   connectedPeriod: '90 days',
 
   segmentation: {
@@ -99,6 +99,38 @@ const DATA = {
     { week: 'May 26', dtc: 1010, retail: 1420, amazon: 555, sephora: 428, ulta: 312, target: 125 },
   ],
 };
+
+// ─── Top spenders mock data ────────────────────────────────────────────────────
+const FIRST_NAMES = ['Emma','Liam','Olivia','Noah','Ava','Ethan','Sophia','Mason','Isabella','Logan','Mia','Lucas','Charlotte','Aiden','Amelia','Jackson','Harper','Sebastian','Evelyn','Mateo','Abigail','James','Emily','Alexander','Elizabeth','Benjamin','Sofia','Elijah','Avery','Michael','Ella','Owen','Scarlett','Samuel','Grace','Daniel','Chloe','Henry','Victoria','Carter','Riley','Wyatt','Aria','Jayden','Lily','John','Aubrey','Luke','Zoey','Gabriel'];
+const LAST_NAMES  = ['Smith','Johnson','Williams','Brown','Jones','Garcia','Miller','Davis','Martinez','Wilson','Anderson','Taylor','Thomas','Moore','Jackson','White','Harris','Martin','Thompson','Young','Robinson','Lewis','Walker','Hall','Allen','Young','King','Wright','Scott','Green','Baker','Adams','Nelson','Hill','Campbell','Mitchell','Roberts','Carter','Phillips','Evans'];
+const RETAILERS_LIST = ['Amazon','Sephora','Ulta','Target'];
+
+function seededRand(seed) {
+  let s = seed;
+  return () => { s = (s * 9301 + 49297) % 233280; return s / 233280; };
+}
+
+const TOP_SPENDERS = Array.from({ length: 1000 }, (_, i) => {
+  const r = seededRand(i * 137 + 42);
+  const first = FIRST_NAMES[Math.floor(r() * FIRST_NAMES.length)];
+  const last  = LAST_NAMES[Math.floor(r()  * LAST_NAMES.length)];
+  const domain = ['gmail.com','yahoo.com','outlook.com','icloud.com'][Math.floor(r() * 4)];
+  const numRetailers = r() < 0.5 ? 1 : r() < 0.8 ? 2 : r() < 0.95 ? 3 : 4;
+  const shuffled = [...RETAILERS_LIST].sort(() => r() - 0.5);
+  const retailers = shuffled.slice(0, numRetailers);
+  const orders = Math.floor(r() * 8) + 1;
+  const aov = Math.round((r() * 120 + 35) * 100) / 100;
+  const totalSpend = Math.round(orders * aov * 100) / 100;
+  return {
+    rank: i + 1,
+    name: `${first} ${last}`,
+    email: `${first.toLowerCase()}.${last.toLowerCase()}${Math.floor(r()*99)}@${domain}`,
+    retailers,
+    orders,
+    aov,
+    totalSpend,
+  };
+});
 
 // ─── Helpers ───────────────────────────────────────────────────────────────────
 function fmt(n) {
@@ -280,6 +312,107 @@ function RetailerTable({ rows }) {
 }
 
 // ─── Main dashboard ────────────────────────────────────────────────────────────
+const TIER_LIMITS = [50, 100, 500, 1000];
+
+function TopSpendersSection() {
+  const [limit, setLimit] = useState(50);
+  const [exported, setExported] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+
+  const PREVIEW = 10;
+  const allRows = TOP_SPENDERS.slice(0, limit);
+  const rows = expanded ? allRows : allRows.slice(0, PREVIEW);
+
+  function handleExport() {
+    setExported(true);
+    setTimeout(() => setExported(false), 2000);
+  }
+
+  return (
+    <div>
+      <SectionLabel>Top spenders at retail</SectionLabel>
+      <Section>
+        {/* Header row */}
+        <div className="flex items-center justify-between mb-5">
+          <SectionTitle>Highest AOV buyers identified across retail channels</SectionTitle>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1 bg-stone-100 rounded-xl p-1">
+              {TIER_LIMITS.map(t => (
+                <button
+                  key={t}
+                  onClick={() => { setLimit(t); setExpanded(false); }}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all
+                    ${limit === t ? 'bg-white text-stone-900 shadow-sm' : 'text-stone-500 hover:text-stone-700'}`}
+                >
+                  Top {t.toLocaleString()}
+                </button>
+              ))}
+            </div>
+            <button
+              onClick={handleExport}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold border border-stone-200 text-stone-700 hover:bg-stone-50 transition-colors"
+            >
+              <Download size={14} />
+              {exported ? 'Exported!' : 'Export segment'}
+            </button>
+          </div>
+        </div>
+
+        {/* Table — always shows first 10, rest collapsible */}
+        <div className="overflow-hidden rounded-xl border border-stone-100">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="bg-stone-50 border-b border-stone-100">
+                <th className="text-left py-3 px-4 text-xs font-semibold text-stone-400 uppercase tracking-wide w-10">#</th>
+                <th className="text-left py-3 px-4 text-xs font-semibold text-stone-400 uppercase tracking-wide">Name</th>
+                <th className="text-left py-3 px-4 text-xs font-semibold text-stone-400 uppercase tracking-wide">Email</th>
+                <th className="text-left py-3 px-4 text-xs font-semibold text-stone-400 uppercase tracking-wide">Retailers</th>
+                <th className="text-right py-3 px-4 text-xs font-semibold text-stone-400 uppercase tracking-wide">Orders</th>
+                <th className="text-right py-3 px-4 text-xs font-semibold text-stone-400 uppercase tracking-wide">AOV</th>
+                <th className="text-right py-3 px-4 text-xs font-semibold text-stone-400 uppercase tracking-wide">Total spend</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((row, i) => (
+                <tr key={row.email} className={`border-b border-stone-50 hover:bg-stone-50/60 transition-colors ${i % 2 === 0 ? '' : 'bg-stone-50/30'}`}>
+                  <td className="py-3 px-4 text-stone-400 text-xs">{row.rank}</td>
+                  <td className="py-3 px-4 font-medium text-stone-800">{row.name}</td>
+                  <td className="py-3 px-4 text-stone-500">{row.email}</td>
+                  <td className="py-3 px-4">
+                    <div className="flex flex-wrap gap-1">
+                      {row.retailers.map(r => (
+                        <span key={r} className="text-xs font-semibold px-2 py-0.5 rounded-full bg-stone-100 text-stone-600">{r}</span>
+                      ))}
+                    </div>
+                  </td>
+                  <td className="py-3 px-4 text-right text-stone-700">{row.orders}</td>
+                  <td className="py-3 px-4 text-right font-semibold text-stone-900">${row.aov.toFixed(2)}</td>
+                  <td className="py-3 px-4 text-right font-bold" style={{ color: C.orange }}>${row.totalSpend.toFixed(2)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Show more / less */}
+        <div className="flex items-center justify-between mt-3">
+          <p className="text-xs text-stone-400">
+            Showing {rows.length.toLocaleString()} of {limit.toLocaleString()} buyers · Sorted by total spend
+          </p>
+          {allRows.length > PREVIEW && (
+            <button
+              onClick={() => setExpanded(e => !e)}
+              className="flex items-center gap-1.5 text-xs font-semibold text-stone-500 hover:text-stone-800 transition-colors"
+            >
+              {expanded ? <><ChevronUp size={14} /> Show less</> : <><ChevronDown size={14} /> Show all {limit.toLocaleString()} buyers</>}
+            </button>
+          )}
+        </div>
+      </Section>
+    </div>
+  );
+}
+
 export function BrandAnalytics() {
   const [retailerView, setRetailerView] = useState('all');
   const [showRetailerLines, setShowRetailerLines] = useState(false);
@@ -347,7 +480,7 @@ export function BrandAnalytics() {
 
           <div className="relative z-10">
             <p className="text-xs font-semibold uppercase tracking-widest text-amber-400/80 mb-2">
-              Connected in the last 90 days
+              Unique retail buyers identified
             </p>
             <div className="flex items-end gap-4 mb-3">
               <span className="font-fraunces text-7xl font-bold text-white leading-none">
@@ -358,16 +491,9 @@ export function BrandAnalytics() {
                   <TrendingUp size={16} />
                   <span className="text-sm font-semibold">+34% vs. prior period</span>
                 </div>
-                <p className="text-stone-400 text-sm">unique retail buyers identified</p>
+                <p className="text-stone-400 text-sm">connected in the last 90 days</p>
               </div>
             </div>
-            <p className="font-fraunces text-2xl text-amber-300 font-medium max-w-xl">
-              This is what you were missing.
-            </p>
-            <p className="text-stone-400 text-sm mt-2 max-w-2xl">
-              Every one of these shoppers bought Oriva at a retailer. You had no record of it. Now you do.
-            </p>
-
             {/* Mini stat strip */}
             <div className="flex gap-8 mt-6 pt-6 border-t border-white/10">
               {[
@@ -378,7 +504,7 @@ export function BrandAnalytics() {
               ].map(s => (
                 <div key={s.label}>
                   <p className="font-fraunces text-xl font-semibold text-white">{s.value}</p>
-                  <p className="text-stone-500 text-xs mt-0.5">{s.label}</p>
+                  <p className="text-stone-300 text-xs mt-0.5">{s.label}</p>
                 </div>
               ))}
             </div>
@@ -388,7 +514,7 @@ export function BrandAnalytics() {
         {/* ── 2. Shopper Segmentation ─────────────────────────────────────── */}
         <div>
           <SectionLabel>Shopper segmentation</SectionLabel>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 gap-4">
 
             {/* Retail-Only */}
             <Section>
@@ -415,6 +541,13 @@ export function BrandAnalytics() {
               <p className="text-xs text-stone-400 mt-3 leading-relaxed">
                 Never purchased DTC. Retail is their only brand touchpoint.
               </p>
+              <button
+                className="mt-4 w-full flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold border border-stone-200 text-stone-700 hover:bg-stone-50 transition-colors"
+                onClick={() => alert('Exporting Retail-Only segment…')}
+              >
+                <Download size={14} />
+                Export as segment
+              </button>
             </Section>
 
             {/* Omnichannel */}
@@ -450,34 +583,24 @@ export function BrandAnalytics() {
               <p className="text-xs text-stone-400 mt-3 leading-relaxed">
                 Shops both DTC and at retail. Your most engaged, highest-value cohort.
               </p>
+              <div className="mt-4 flex gap-2">
+                <button
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold border border-stone-200 text-stone-700 hover:bg-stone-50 transition-colors"
+                  onClick={() => alert('Exporting Omnichannel segment…')}
+                >
+                  <Download size={14} />
+                  Export as segment
+                </button>
+                <button
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold border border-stone-200 text-stone-700 hover:bg-stone-50 transition-colors"
+                  onClick={() => alert('Creating loyalty tier for 1,104 omnichannel buyers…')}
+                >
+                  <Crown size={14} />
+                  Tier upgrade
+                </button>
+              </div>
             </Section>
 
-            {/* DTC-Only */}
-            <Section>
-              <div className="flex items-start justify-between mb-4">
-                <div>
-                  <p className="text-xs font-semibold text-stone-400 uppercase tracking-wide mb-1">
-                    DTC-Only Buyers
-                  </p>
-                  <p className="font-fraunces text-4xl font-bold text-stone-900">
-                    {fmtComma(DATA.segmentation.dtcOnly.count)}
-                  </p>
-                  <p className="text-stone-400 text-sm mt-1">
-                    {DATA.segmentation.dtcOnly.pct}% of connected base
-                  </p>
-                </div>
-                <div
-                  className="w-10 h-10 rounded-xl flex items-center justify-center"
-                  style={{ backgroundColor: C.greenLight }}
-                >
-                  <Users size={18} style={{ color: C.green }} />
-                </div>
-              </div>
-              <MiniSparkline data={sparkDtc} color={C.green} />
-              <p className="text-xs text-stone-400 mt-3 leading-relaxed">
-                No retail exposure detected. Fully within your direct channel.
-              </p>
-            </Section>
           </div>
         </div>
 
@@ -625,14 +748,8 @@ export function BrandAnalytics() {
           </Section>
         </div>
 
-        {/* ── 5. Retailer Breakdown Table ─────────────────────────────────── */}
-        <div>
-          <SectionLabel>Retailer breakdown</SectionLabel>
-          <Section>
-            <SectionTitle>Performance by retailer</SectionTitle>
-            <RetailerTable rows={DATA.gmv.byRetailer} />
-          </Section>
-        </div>
+        {/* ── 5. Top Spenders ─────────────────────────────────────────────── */}
+        <TopSpendersSection />
 
         {/* ── 6. Top SKUs at Retail ───────────────────────────────────────── */}
         <div>
@@ -691,16 +808,6 @@ export function BrandAnalytics() {
                       <p className="font-semibold text-stone-900">{sku.retailers}</p>
                       <p className="text-xs text-stone-400">{sku.retailers === 1 ? 'retailer' : 'retailers'}</p>
                     </div>
-                  </div>
-                  {/* Mini bar */}
-                  <div className="w-24 h-2 bg-stone-100 rounded-full overflow-hidden shrink-0">
-                    <div
-                      className="h-full rounded-full"
-                      style={{
-                        width: `${(sku.units / DATA.topSkus[0].units) * 100}%`,
-                        backgroundColor: sku.dtcAvail ? C.orange : C.rose,
-                      }}
-                    />
                   </div>
                 </div>
               ))}
@@ -788,6 +895,15 @@ export function BrandAnalytics() {
                 Amazon is driving the most retail volume; Sephora and Ulta show the highest loyalty overlap.
               </p>
             </div>
+          </Section>
+        </div>
+
+        {/* ── 8. Retailer Breakdown Table ─────────────────────────────────── */}
+        <div>
+          <SectionLabel>Retailer breakdown</SectionLabel>
+          <Section>
+            <SectionTitle>Performance by retailer</SectionTitle>
+            <RetailerTable rows={DATA.gmv.byRetailer} />
           </Section>
         </div>
 
