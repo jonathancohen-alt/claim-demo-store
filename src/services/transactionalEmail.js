@@ -29,12 +29,15 @@ const RETAIL_LOGOS = {
 
 function buildReceiptsModule(retailers, points) {
   const retailerList = retailers.split(' and ');
-  const rows = retailerList.map((r) => {
+  let remaining = points;
+  const rows = retailerList.map((r, idx) => {
     const logo = RETAIL_LOGOS[r] || { initial: r[0], bg: '#555' };
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
     const month = months[Math.floor(Math.random() * months.length)];
     const day = Math.floor(Math.random() * 28) + 1;
-    const pts = Math.floor(points / retailerList.length) + Math.floor(Math.random() * 30);
+    const isLast = idx === retailerList.length - 1;
+    const pts = isLast ? remaining : Math.floor(points / retailerList.length);
+    remaining -= pts;
     return `
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid rgba(255,255,255,0.1);">
         <tr>
